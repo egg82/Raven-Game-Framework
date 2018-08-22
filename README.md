@@ -6,6 +6,8 @@ Originally this project was called "Egg82LibEnhanced" but I scrapped both the pr
 # Usage
 More examples available in the "Test" project
 ### Input (Keyboard, Mouse, DXInput)
+The input engine uses events and also stores states at the same time.
+This means you can have your input handling be either event-driven or update-driven. The choice is yours!
 ```CSharp
 ServiceLocator.ProvideService(typeof(InputEngine)); // Also available, NullInputEngine & LoggingInputEngine
 ...
@@ -15,13 +17,15 @@ inputEngine.AddWindow(window);
 
 ...
 
+// Event-driven
 inputEngine.Mouse.MouseMove += OnMouseMove;
 inputEngine.Controllers.TriggerPressed += OnTriggerPressed;
 inputEngine.Keyboard.KeyDown += OnKeyDown;
-if (inputEngine.Keyboard.IsAnyKeyDown(Key.A, Key.Left)) {
-    character.X--;
-}
-if (inputEngine.Controllers.IsAnyCodeFlagged(0, (int) XboxButtonCode.Left, (int) XboxStickCode.LeftW)) {
+// Update-driven
+if (
+    inputEngine.Keyboard.IsAnyKeyDown(Key.A, Key.Left)
+    || inputEngine.Controllers.IsAnyCodeFlagged(0, (int) XboxButtonCode.Left, (int) XboxStickCode.LeftW)
+) {
     character.X--;
 }
 if (inputEngine.Keyboard.AreAllKeysDown(Key.S, Key.C, Key.R, Key.T)) {
@@ -40,8 +44,18 @@ do {
 ServiceLocator.ProvideService(typeof(AudioEngine)); // Also available, NullAudioEngine & LoggingAudioEngine
 ...
 IAudioEngine audioEngine = ServiceLocator.GetService<IAudioEngine>();
-audio = audioEngine.Add("example", AudioType.Music, AudioFormat.MP3, File.ReadAllBytes("music.mp3"));
+IAudio audio = audioEngine.Add("example", AudioType.Music, AudioFormat.MP3, File.ReadAllBytes("music.mp3"));
 audio.Play(true); // True = Repeat, False = Play only once
+
+...
+
+IAudio audio = audioEngine.Get("example");
+audio.Volume = 0.15d;
+
+...
+
+Stream micStream = new MemoryStream();
+audioEngine.StartRecording(ref micStream);
 ```
 ### Graphics (SFML)
 ```CSharp
@@ -51,7 +65,7 @@ Coming soon!
 ```CSharp
 Coming soon!
 ```
-### Mod Support
+### Mod/Plugin Support
 ```CSharp
 Coming soon!
 ```
