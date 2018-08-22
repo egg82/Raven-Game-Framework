@@ -13,6 +13,23 @@ IInputEngine inputEngine = ServiceLocator.GetService<IInputEngine>();
 Window window = new Window("Input"); // Window is required for keyboard/mouse since that's what traps the events
 inputEngine.AddWindow(window);
 
+...
+
+inputEngine.Mouse.MouseMove += OnMouseMove;
+inputEngine.Controllers.TriggerPressed += OnTriggerPressed;
+inputEngine.Keyboard.KeyDown += OnKeyDown;
+if (inputEngine.Keyboard.IsAnyKeyDown(Key.A, Key.Left)) {
+    character.X--;
+}
+if (inputEngine.Controllers.IsAnyCodeFlagged(0, (int) XboxButtonCode.Left, (int) XboxStickCode.LeftW)) {
+    character.X--;
+}
+if (inputEngine.Keyboard.AreAllKeysDown(Key.S, Key.C, Key.R, Key.T)) {
+    UnlockEasterEgg();
+}
+
+...
+
 do {
     inputEngine.UpdateControllers(); // Controller/DXInput events
     window.Update(); // Keyboard/Mouse/Window events & Graphics Update() loop
@@ -31,6 +48,10 @@ audio.Play(true); // True = Repeat, False = Play only once
 Coming soon!
 ```
 ### Physics (Farseer)
+```CSharp
+Coming soon!
+```
+### Mod Support
 ```CSharp
 Coming soon!
 ```

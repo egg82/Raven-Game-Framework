@@ -59,6 +59,9 @@
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="SFML.Portable, Version=2.0.6807.40116, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SFML-Portable-2.4.1.5.1\lib\SFML.Portable.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -79,6 +82,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="SFML.Portable.dll.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Raven Game Framework\Raven Game Framework.csproj">

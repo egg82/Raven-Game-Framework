@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Atomics;
 using SFML.Window;
+using static SFML.Window.Keyboard;
 
 namespace Raven.Input.Core {
     public abstract class AbstractKeyboard : IKeyboard {
@@ -17,7 +18,7 @@ namespace Raven.Input.Core {
         }
 
         //public
-        public virtual bool IsAnyKeyDown(params int[] keyCodes) {
+        public virtual bool IsAnyKeyDown(params Key[] keyCodes) {
             if (keyCodes == null || keyCodes.LongLength == 0L) {
                 return true;
             }
@@ -33,7 +34,7 @@ namespace Raven.Input.Core {
 
             return false;
         }
-        public virtual bool AreAllKeysDown(params int[] keyCodes) {
+        public virtual bool AreAllKeysDown(params Key[] keyCodes) {
             if (keyCodes == null || keyCodes.LongLength == 0L) {
                 return true;
             }

@@ -1,5 +1,6 @@
 ﻿using SFML.Window;
 using System;
+using static SFML.Window.Keyboard;
 
 namespace Raven.Input.Core {
     public interface IKeyboard {
@@ -7,7 +8,7 @@ namespace Raven.Input.Core {
         event EventHandler<KeyEventArgs> KeyUp;
         event EventHandler<KeyEventArgs> KeyDown;
 
-        bool IsAnyKeyDown(params int[] keyCodes);
-        bool AreAllKeysDown(params int[] keyCodes);
+        bool IsAnyKeyDown(params Key[] keyCodes);
+        bool AreAllKeysDown(params Key[] keyCodes);
     }
 }

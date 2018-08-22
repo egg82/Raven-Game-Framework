@@ -4,10 +4,12 @@ using Raven.Audio;
 using Raven.Audio.Core;
 using Raven.Display;
 using Raven.Input;
+using Raven.Input.Enums;
 using Raven.Patterns;
 using System;
 using System.IO;
 using System.Reflection;
+using static SFML.Window.Keyboard;
 
 namespace Test {
     class Program {
