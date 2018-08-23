@@ -115,6 +115,8 @@
     <Compile Include="Audio\Core\Audio.cs" />
     <Compile Include="Audio\Core\NullAudio.cs" />
     <Compile Include="Audio\Core\LoggingAudio.cs" />
+    <Compile Include="Core\AffinityThread.cs" />
+    <Compile Include="Core\UpdateDeltaLoop.cs" />
     <Compile Include="Geom\PointD.cs" />
     <Compile Include="Display\Window.cs" />
     <Compile Include="Geom\SizeD.cs" />
@@ -147,13 +149,12 @@
     <Compile Include="Patterns\ServiceLocator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\MathUtil.cs" />
+    <Compile Include="Utils\ThreadUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="SFML.Portable.dll.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

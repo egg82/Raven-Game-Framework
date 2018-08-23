@@ -2,13 +2,16 @@
 using log4net;
 using Raven.Audio;
 using Raven.Audio.Core;
+using Raven.Core;
 using Raven.Display;
 using Raven.Input;
 using Raven.Input.Enums;
 using Raven.Patterns;
+using Raven.Utils;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using static SFML.Window.Keyboard;
 
 namespace Test {
@@ -21,19 +24,55 @@ namespace Test {
         static void Main(string[] args) {
             Console.CancelKeyPress += OnCancel;
 
-            //Audio();
-            //Input();
-            Graphics();
-
-            do {
+            UpdateDeltaLoop updateLoop = new UpdateDeltaLoop(delegate(double deltaTime) {
                 ServiceLocator.GetService<IInputEngine>()?.UpdateControllers();
                 foreach (Window w in windows) {
-                    w.Update();
-                    w.Draw();
+                    w.UpdateWindow();
+                    w.UpdateStates(deltaTime);
                 }
+            }, 120.0d);
+            UpdateDeltaLoop drawLoop = new UpdateDeltaLoop(delegate() {
+                foreach (Window w in windows) {
+                    w.DrawGraphics();
+                }
+            }, 60.0d);
+
+            ThreadPool.QueueUserWorkItem(delegate(object state) {
+                //Audio();
+                //Input();
+                Graphics();
+
+                ThreadUtil.PreventSystemSleep();
+
+                foreach (Window w in windows) {
+                    w.Closed += OnWindowClose;
+                }
+
+                /*do {
+                    ServiceLocator.GetService<IInputEngine>()?.UpdateControllers();
+                    foreach (Window w in windows) {
+                        w.UpdateWindow();
+                        w.UpdateStates(1.0d);
+                    }
+                } while (updating);*/
+                updateLoop.Start();
+            });
+            ThreadPool.QueueUserWorkItem(delegate(object state) {
+                /*do {
+                    foreach (Window w in windows) {
+                        w.DrawGraphics();
+                    }
+                } while (updating);*/
+                drawLoop.Start();
+            });
+
+            do {
+                Thread.Sleep(50);
             } while (updating);
+            updateLoop.Stop();
+            drawLoop.Stop();
+            
             Console.WriteLine("Execution stopped.");
-            Console.ReadLine();
         }
 
         private static void Audio() {
@@ -61,22 +100,20 @@ namespace Test {
             ServiceLocator.ProvideService(typeof(LoggingInputEngine), false);
             log.Info("Provided service");
 
-            Window window = new Window("Input");
+            Window window = new Window(800, 600, "Input", SFML.Window.Styles.Default, false);
             windows.Add(window);
             log.Info("Created window \"" + window.Title + "\"");
 
             IInputEngine inputEngine = ServiceLocator.GetService<IInputEngine>();
             log.Info("Got service " + inputEngine);
 
-            //inputEngine.Controllers.Supported = false;
-
-            inputEngine.Controllers.Vibrate(0, 1.0d, 1.0d);
+            //inputEngine.Controllers.Vibrate(0, 1.0d, 1.0d);
 
             inputEngine.AddWindow(window);
             log.Info("Added window \"" + window.Title + "\"");
         }
         private static void Graphics() {
-            Window window = new Window("Graphics");
+            Window window = new Window(800, 600, "Graphics", SFML.Window.Styles.Default, false);
             windows.Add(window);
             log.Info("Created window \"" + window.Title + "\"");
         }
@@ -84,6 +121,11 @@ namespace Test {
         private static void OnCancel(object sender, ConsoleCancelEventArgs e) {
             e.Cancel = true;
             updating = false;
+        }
+        private static void OnWindowClose(object sender, EventArgs e) {
+            Window w = (Window) sender;
+            windows.Remove(w);
+            w.Close();
         }
     }
 }

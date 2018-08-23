@@ -1,4 +1,5 @@
-﻿using SFML.Window;
+﻿using SFML.Graphics;
+using SFML.Window;
 using System;
 
 namespace Raven.Display {
@@ -12,15 +13,20 @@ namespace Raven.Display {
         internal event EventHandler<MouseButtonEventArgs> MouseButtonPressed = null;
         internal event EventHandler<MouseButtonEventArgs> MouseButtonReleased = null;
 
-        internal event EventHandler<EventArgs> GainedFocus = null;
+        public event EventHandler<EventArgs> GainedFocus = null;
+        public event EventHandler<EventArgs> LostFocus = null;
+        public event EventHandler<EventArgs> Closed = null;
 
-        private SFML.Window.Window window = null;
+        private RenderWindow window = null;
+        private readonly object windowLock = new object();
+        private readonly object updateLock = new object();
+        private readonly object drawLock = new object();
 
         private string title = null;
 
         //constructor
-        public Window(string title) {
-            window = new SFML.Window.Window(new VideoMode(800, 600), title);
+        public Window(uint width, uint height, string title, Styles style = Styles.Default, bool vsync = true, ushort antialiasing = 16) {
+            window = new RenderWindow(new VideoMode(width, height), title, style, new ContextSettings(24, 8, antialiasing));
             this.title = title;
 
             window.KeyPressed += OnKeyPressed;
@@ -32,6 +38,11 @@ namespace Raven.Display {
             window.MouseButtonReleased += OnMouseUp;
 
             window.GainedFocus += OnGainedFocus;
+            window.LostFocus += OnLostFocus;
+            window.Closed += OnClosed;
+
+            window.SetVerticalSyncEnabled(vsync);
+            window.SetActive(false);
         }
 
         //public
@@ -39,13 +50,35 @@ namespace Raven.Display {
             get {
                 return title;
             }
+            set {
+                if (value == null || value == title) {
+                    return;
+                }
+
+                title = value;
+                window.SetTitle(title);
+            }
+        }
+        public void Close() {
+            window.Close();
         }
 
-        public void Update() {
-            window.DispatchEvents();
+        public void UpdateWindow() {
+            lock (windowLock) {
+                window.DispatchEvents();
+            }
         }
-        public void Draw() {
-            window.Display();
+        public void UpdateStates(double deltaTime) {
+            lock (updateLock) {
+
+            }
+        }
+        public void DrawGraphics() {
+            lock (drawLock) {
+                window.Clear(Color.Transparent);
+                window.Display();
+                window.SetActive(false);
+            }
         }
 
         //private
@@ -71,6 +104,12 @@ namespace Raven.Display {
 
         private void OnGainedFocus(object sender, EventArgs e) {
             GainedFocus?.Invoke(this, e);
+        }
+        private void OnLostFocus(object sender, EventArgs e) {
+            LostFocus?.Invoke(this, e);
+        }
+        private void OnClosed(object sender, EventArgs e) {
+            Closed?.Invoke(this, e);
         }
     }
 }

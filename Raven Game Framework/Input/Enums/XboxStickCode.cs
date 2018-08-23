@@ -1,5 +1,5 @@
 ﻿namespace Raven.Input.Enums {
-    public enum XboxStickCode {
+    public enum XboxStickCode : int {
         LeftN = 100,
         LeftNE = 101,
         LeftE = 102,

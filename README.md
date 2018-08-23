@@ -9,10 +9,10 @@ More examples available in the "Test" project
 The input engine uses events and also stores states at the same time.
 This means you can have your input handling be either event-driven or update-driven. The choice is yours!
 ```CSharp
-ServiceLocator.ProvideService(typeof(InputEngine)); // Also available, NullInputEngine & LoggingInputEngine
+ServiceLocator.ProvideService(typeof(InputEngine)); // Also available: NullInputEngine & LoggingInputEngine
 ...
 IInputEngine inputEngine = ServiceLocator.GetService<IInputEngine>();
-Window window = new Window("Input"); // Window is required for keyboard/mouse since that's what traps the events
+Window window = new Window(800, 600, "Input"); // Window is required for keyboard/mouse since that's what traps the events
 inputEngine.AddWindow(window);
 
 ...
@@ -36,12 +36,12 @@ if (inputEngine.Keyboard.AreAllKeysDown(Key.S, Key.C, Key.R, Key.T)) {
 
 do {
     inputEngine.UpdateControllers(); // Controller/DXInput events
-    window.Update(); // Keyboard/Mouse/Window events & Graphics Update() loop
+    window.UpdateWindow(); // Keyboard/Mouse/Window events & Window properties
 } while (true); // In reality you'll likely want to stop this when the last Window is closed
 ```
 ### Audio (NAudio)
 ```CSharp
-ServiceLocator.ProvideService(typeof(AudioEngine)); // Also available, NullAudioEngine & LoggingAudioEngine
+ServiceLocator.ProvideService(typeof(AudioEngine)); // Also available: NullAudioEngine & LoggingAudioEngine
 ...
 IAudioEngine audioEngine = ServiceLocator.GetService<IAudioEngine>();
 IAudio audio = audioEngine.Add("example", AudioType.Music, AudioFormat.MP3, File.ReadAllBytes("music.mp3"));

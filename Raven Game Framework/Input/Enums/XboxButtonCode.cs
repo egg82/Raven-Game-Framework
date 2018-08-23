@@ -1,5 +1,5 @@
 ﻿namespace Raven.Input.Enums {
-    public enum XboxButtonCode {
+    public enum XboxButtonCode : int {
         A = 0,
         B = 1,
         Y = 2,
