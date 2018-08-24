@@ -225,8 +225,8 @@ namespace Raven.Display {
             return retVal;
         }
         private void ApplyBounds() {
-            Width = (TextureBounds.Width + Math.Max(Skew.TopRight.X, Skew.BottomRight.X)) * Scale.X;
-            Height = (TextureBounds.Height + Math.Max(Skew.BottomLeft.Y, Skew.BottomRight.Y)) * Scale.Y;
+            base.Width = (Math.Max(TextureBounds.Width, 1.0d) + Math.Max(Skew.TopRight.X, Skew.BottomRight.X)) * Scale.X;
+            base.Height = (Math.Max(TextureBounds.Height, 1.0d) + Math.Max(Skew.BottomLeft.Y, Skew.BottomRight.Y)) * Scale.Y;
         }
 
         private void OnSkewChanged(object sender, EventArgs e) {
