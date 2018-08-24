@@ -1,4 +1,5 @@
-﻿using Iesi.Collections.Generic;
+﻿using JoshuaKearney.Collections;
+using Raven.Core;
 using Raven.Geom.Tree;
 using SFML.Graphics;
 using SFML.Window;
@@ -25,7 +26,8 @@ namespace Raven.Display {
         private readonly object drawLock = new object();
 
         private readonly QuadTree<DisplayObject> quadTree = null;
-        private LinkedHashSet<State> states = new LinkedHashSet<State>();
+        private CopyOnWriteList<State> painter = new CopyOnWriteList<State>();
+        private ConcurrentSet<State> states = new ConcurrentSet<State>();
         private readonly Color color = new Color(255, 255, 255, 255);
 
         private string title = null;
@@ -78,7 +80,7 @@ namespace Raven.Display {
         }
         public void UpdateStates(double deltaTime) {
             lock (updateLock) {
-                foreach (State state in states) {
+                foreach (State state in painter) {
                     if (state.Alive && state.Active) {
                         state.Update(deltaTime);
                     }
@@ -88,11 +90,13 @@ namespace Raven.Display {
         public void DrawGraphics() {
             lock (drawLock) {
                 window.Clear(Color.Transparent);
-                foreach (State state in states) {
-                    if (state.Alive) {
-                        state.Draw(window, Transform.Identity, color);
+
+                if (painter.Count > 0) {
+                    for (int i = painter.Count; i >= 0; i--) {
+                        painter[i]?.Draw(window, Transform.Identity, color);
                     }
                 }
+                
                 window.Display();
                 window.SetActive(false);
             }
@@ -108,43 +112,41 @@ namespace Raven.Display {
             if (state == null) {
                 throw new ArgumentNullException("state");
             }
-
-            bool retVal = false;
-            lock (updateLock) { // Lock is re-entrant
-                if (states.Add(state)) {
-                    state.Window?.RemoveState(state);
-                    state.Window = this;
-                    state.OnEnter();
-                    retVal = true;
-                }
+            
+            if (!states.Add(state)) {
+                return false;
             }
-            return retVal;
+
+            lock (updateLock) { // Lock is re-entrant
+                state.Window?.RemoveState(state);
+                state.Window = this;
+                state.OnEnter();
+                painter.Add(state);
+            }
+            return true;
         }
         public bool RemoveState(State state) {
             if (state == null) {
                 throw new ArgumentNullException("state");
             }
-
-            bool retVal = false;
-            lock (updateLock) { // Lock is re-entrant
-                if (states.Remove(state)) {
-                    state.OnExit();
-                    state.Window = null;
-                    retVal = true;
-                }
+            
+            if (!states.Remove(state)) {
+                return false;
             }
-            return retVal;
+
+            lock (updateLock) { // Lock is re-entrant
+                painter.Remove(state);
+                state.OnExit();
+                state.Window = null;
+            }
+            return true;
         }
         public bool ContainsState(State state) {
             if (state == null) {
                 throw new ArgumentNullException("state");
             }
-
-            bool retVal = false;
-            lock (updateLock) { // Lock is re-entrant
-                retVal = states.Contains(state);
-            }
-            return retVal;
+            
+            return states.Contains(state);
         }
 
         //private

@@ -119,6 +119,7 @@
     <Compile Include="Audio\Core\NullAudio.cs" />
     <Compile Include="Audio\Core\LoggingAudio.cs" />
     <Compile Include="Core\AffinityThread.cs" />
+    <Compile Include="Core\CopyOnWriteList.cs" />
     <Compile Include="Core\UpdateDeltaLoop.cs" />
     <Compile Include="Display\Core\Skew.cs" />
     <Compile Include="Display\DisplayObject.cs" />

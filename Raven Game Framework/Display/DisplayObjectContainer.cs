@@ -1,13 +1,12 @@
 ﻿using JoshuaKearney.Collections;
-using Raven.Utils;
+using Raven.Core;
 using SFML.Graphics;
 using System;
 
 namespace Raven.Display {
     public abstract class DisplayObjectContainer : DisplayObject {
         //vars
-        private DisplayObject[] painter = new DisplayObject[0];
-        private long index = 0;
+        private CopyOnWriteList<DisplayObject> painter = new CopyOnWriteList<DisplayObject>();
         private ConcurrentSet<DisplayObject> children = new ConcurrentSet<DisplayObject>();
         private readonly object childrenLock = new object();
 
@@ -27,15 +26,29 @@ namespace Raven.Display {
             }
 
             lock (childrenLock) {
-                // CoW
-                DisplayObject[] temp = new DisplayObject[MathUtil.UpperPowerOfTwo((ulong) (painter.LongLength + 1L))];
-                Array.Copy(painter, temp, painter.LongLength);
-                temp[index] = child;
-                index++;
-                painter = temp;
-
                 child.Parent?.RemoveChild(child);
                 child.Parent = this;
+                painter.Add(child);
+            }
+
+            return true;
+        }
+        public bool AddChildAt(DisplayObject child, int index) {
+            if (child == null) {
+                throw new ArgumentNullException("child");
+            }
+            if (index < 0) {
+                throw new ArgumentOutOfRangeException("index");
+            }
+
+            if (!children.Add(child)) {
+                return false;
+            }
+
+            lock (childrenLock) {
+                child.Parent?.RemoveChild(child);
+                child.Parent = this;
+                painter.Insert(index, child);
             }
 
             return true;
@@ -50,49 +63,58 @@ namespace Raven.Display {
             }
 
             lock (childrenLock) {
-                // CoW
-                DisplayObject[] temp = new DisplayObject[painter.LongLength];
-                Array.Copy(painter, temp, painter.LongLength);
-
-                long reorderIndex = -1L;
-                for (long i = 0L; i < temp.LongLength; i++) {
-                    if (temp[i] == child) {
-                        temp[i] = null;
-                        reorderIndex = i;
-                    }
-                    if (reorderIndex > -1L && i - reorderIndex == 1L) {
-                        temp[reorderIndex] = temp[i];
-                        temp[i] = null;
-                        reorderIndex = i;
-                    }
-                }
-
-                if (reorderIndex > -1L) {
-                    index--;
-                }
-                painter = temp;
-
-                child.Parent?.RemoveChild(child);
-                child.Parent = this;
+                painter.Remove(child);
+                child.Parent = null;
             }
 
             return true;
         }
-        public DisplayObject GetChild(int index) {
+        public DisplayObject RemoveChildAt(int index) {
             if (index < 0) {
+                throw new ArgumentOutOfRangeException("index");
+            }
+
+            DisplayObject child = painter[index];
+
+            if (!children.Remove(child)) {
                 return null;
             }
 
-            // CoW
-            DisplayObject[] temp = painter;
-            if (index >= temp.Length) {
+            lock (childrenLock) {
+                painter.Remove(child);
+                child.Parent = null;
+            }
+
+            return child;
+        }
+        public DisplayObject GetChild(int index) {
+            if (index < 0 || index >= painter.Count) {
                 return null;
             }
 
-            return temp[index];
+            return painter[index];
         }
         public T GetChild<T>(int index) where T : DisplayObject {
             return (T) GetChild(index);
+        }
+        public bool SetChildIndex(DisplayObject child, int newIndex) {
+            if (child == null) {
+                throw new ArgumentNullException("child");
+            }
+            if (newIndex < 0) {
+                throw new ArgumentOutOfRangeException("newIndex");
+            }
+
+            if (!children.Contains(child)) {
+                return false;
+            }
+
+            lock (childrenLock) {
+                painter.Remove(child);
+                painter.Insert(newIndex, child);
+            }
+
+            return true;
         }
         public int Children {
             get {
@@ -101,9 +123,7 @@ namespace Raven.Display {
         }
 
         public override void Update(double deltaTime) {
-            // CoW
-            DisplayObject[] temp = painter;
-            foreach (DisplayObject obj in temp) {
+            foreach (DisplayObject obj in painter) {
                 obj?.Update(deltaTime);
             }
         }
@@ -114,13 +134,10 @@ namespace Raven.Display {
 
             Transform globalTransform = parentTransform * GetTransform();
             Color globalColor = parentColor * Color;
-
-            // CoW
-            DisplayObject[] temp = painter;
-            long tempIndex = index;
-            if (tempIndex > 0L) {
-                for (long i = tempIndex - 1L; i >= 0L; i--) {
-                    temp[i]?.Draw(target, globalTransform, globalColor);
+            
+            if (painter.Count > 0) {
+                for (int i = painter.Count; i >= 0; i--) {
+                    painter[i]?.Draw(target, globalTransform, globalColor);
                 }
             }
         }
