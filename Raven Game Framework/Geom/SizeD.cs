@@ -2,30 +2,36 @@
 using System.Drawing;
 
 namespace Raven.Geom {
-    public struct SizeD {
+    public class SizeD {
+        //vars
         public static readonly SizeD Empty = new SizeD(0.0d, 0.0d);
 
+        //constructor
+        public SizeD() : this(0.0d, 0.0d) {
+
+        }
         public SizeD(SizeD size) {
             if (size == null) {
                 throw new ArgumentNullException("size");
             }
 
-            this.Width = size.Width;
-            this.Height = size.Height;
+            Width = size.Width;
+            Height = size.Height;
         }
         public SizeD(PointD point) {
             if (point == null) {
                 throw new ArgumentNullException("point");
             }
 
-            this.Width = point.X;
-            this.Height = point.Y;
+            Width = point.X;
+            Height = point.Y;
         }
         public SizeD(double width, double height) {
-            this.Width = width;
-            this.Height = height;
+            Width = width;
+            Height = height;
         }
 
+        //public
         public double Width { get; set; }
         public double Height { get; set; }
         public bool IsEmpty {
@@ -91,5 +97,8 @@ namespace Raven.Geom {
         public static explicit operator PointD(SizeD size) {
             return new PointD(size.Width, size.Height);
         }
+
+        //private
+
     }
 }

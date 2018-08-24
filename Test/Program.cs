@@ -5,14 +5,13 @@ using Raven.Audio.Core;
 using Raven.Core;
 using Raven.Display;
 using Raven.Input;
-using Raven.Input.Enums;
 using Raven.Patterns;
 using Raven.Utils;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using static SFML.Window.Keyboard;
+using Test.Graphics;
 
 namespace Test {
     class Program {
@@ -106,16 +105,21 @@ namespace Test {
 
             IInputEngine inputEngine = ServiceLocator.GetService<IInputEngine>();
             log.Info("Got service " + inputEngine);
-
+            
             //inputEngine.Controllers.Vibrate(0, 1.0d, 1.0d);
 
             inputEngine.AddWindow(window);
             log.Info("Added window \"" + window.Title + "\"");
         }
         private static void Graphics() {
+            ServiceLocator.ProvideService(typeof(InputEngine), false);
+            log.Info("Provided service");
+
             Window window = new Window(800, 600, "Graphics", SFML.Window.Styles.Default, false);
             windows.Add(window);
             log.Info("Created window \"" + window.Title + "\"");
+            window.AddState(new GraphicsState());
+            log.Info("Added state to window \"" + window.Title + "\"");
         }
 
         private static void OnCancel(object sender, ConsoleCancelEventArgs e) {

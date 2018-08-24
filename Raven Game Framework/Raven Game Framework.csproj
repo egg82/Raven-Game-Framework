@@ -64,6 +64,9 @@
     <Reference Include="FarseerPhysics, Version=3.5.0.38023, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FarseerPhysics.3.5.0\lib\NET40\FarseerPhysics.dll</HintPath>
     </Reference>
+    <Reference Include="Iesi.Collections, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Iesi.Collections.4.0.4\lib\net40\Iesi.Collections.dll</HintPath>
+    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
@@ -117,9 +120,19 @@
     <Compile Include="Audio\Core\LoggingAudio.cs" />
     <Compile Include="Core\AffinityThread.cs" />
     <Compile Include="Core\UpdateDeltaLoop.cs" />
+    <Compile Include="Display\Core\Skew.cs" />
+    <Compile Include="Display\DisplayObject.cs" />
+    <Compile Include="Display\DisplayObjectContainer.cs" />
+    <Compile Include="Display\Sprite.cs" />
+    <Compile Include="Display\State.cs" />
     <Compile Include="Geom\PointD.cs" />
     <Compile Include="Display\Window.cs" />
+    <Compile Include="Geom\RectD.cs" />
     <Compile Include="Geom\SizeD.cs" />
+    <Compile Include="Geom\Tree\Events\BoundsEventArgs.cs" />
+    <Compile Include="Geom\Tree\QuadLeaf.cs" />
+    <Compile Include="Geom\Tree\QuadNode.cs" />
+    <Compile Include="Geom\Tree\QuadTree.cs" />
     <Compile Include="Input\Core\LoggingControllers.cs" />
     <Compile Include="Input\Core\LoggingKeyboard.cs" />
     <Compile Include="Input\Core\LoggingMouse.cs" />

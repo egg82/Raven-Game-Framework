@@ -1,4 +1,6 @@
-﻿using SFML.Graphics;
+﻿using Iesi.Collections.Generic;
+using Raven.Geom.Tree;
+using SFML.Graphics;
 using SFML.Window;
 using System;
 
@@ -22,6 +24,10 @@ namespace Raven.Display {
         private readonly object updateLock = new object();
         private readonly object drawLock = new object();
 
+        private readonly QuadTree<DisplayObject> quadTree = null;
+        private LinkedHashSet<State> states = new LinkedHashSet<State>();
+        private readonly Color color = new Color(255, 255, 255, 255);
+
         private string title = null;
 
         //constructor
@@ -43,6 +49,8 @@ namespace Raven.Display {
 
             window.SetVerticalSyncEnabled(vsync);
             window.SetActive(false);
+
+            quadTree = new QuadTree<DisplayObject>(width, height);
         }
 
         //public
@@ -70,15 +78,73 @@ namespace Raven.Display {
         }
         public void UpdateStates(double deltaTime) {
             lock (updateLock) {
-
+                foreach (State state in states) {
+                    if (state.Alive && state.Active) {
+                        state.Update(deltaTime);
+                    }
+                }
             }
         }
         public void DrawGraphics() {
             lock (drawLock) {
                 window.Clear(Color.Transparent);
+                foreach (State state in states) {
+                    if (state.Alive) {
+                        state.Draw(window, Transform.Identity, color);
+                    }
+                }
                 window.Display();
                 window.SetActive(false);
             }
+        }
+
+        public QuadTree<DisplayObject> QuadTree {
+            get {
+                return quadTree;
+            }
+        }
+
+        public bool AddState(State state) {
+            if (state == null) {
+                throw new ArgumentNullException("state");
+            }
+
+            bool retVal = false;
+            lock (updateLock) { // Lock is re-entrant
+                if (states.Add(state)) {
+                    state.Window?.RemoveState(state);
+                    state.Window = this;
+                    state.OnEnter();
+                    retVal = true;
+                }
+            }
+            return retVal;
+        }
+        public bool RemoveState(State state) {
+            if (state == null) {
+                throw new ArgumentNullException("state");
+            }
+
+            bool retVal = false;
+            lock (updateLock) { // Lock is re-entrant
+                if (states.Remove(state)) {
+                    state.OnExit();
+                    state.Window = null;
+                    retVal = true;
+                }
+            }
+            return retVal;
+        }
+        public bool ContainsState(State state) {
+            if (state == null) {
+                throw new ArgumentNullException("state");
+            }
+
+            bool retVal = false;
+            lock (updateLock) { // Lock is re-entrant
+                retVal = states.Contains(state);
+            }
+            return retVal;
         }
 
         //private

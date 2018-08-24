@@ -1,16 +1,52 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 
 namespace Raven.Geom {
-    public struct PointD {
+    public class PointD {
+        //vars
         public static readonly PointD Empty = new PointD(0.0d, 0.0d);
 
+        internal event EventHandler<EventArgs> Changed = null;
+
+        private double x = 0.0d;
+        private double y = 0.0d;
+
+        //constructor
+        public PointD() : this(0.0d, 0.0d) {
+
+        }
         public PointD(double x, double y) {
-            this.X = x;
-            this.Y = y;
+            this.x = x;
+            this.y = y;
         }
 
-        public double X { get; set; }
-        public double Y { get; set; }
+        //public
+        public double X {
+            get {
+                return x;
+            }
+            set {
+                if (value == x) {
+                    return;
+                }
+
+                x = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public double Y {
+            get {
+                return y;
+            }
+            set {
+                if (value == y) {
+                    return;
+                }
+
+                y = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
         public bool IsEmpty {
             get {
                 return (X == 0.0d && Y == 0.0d) ? true : false;
@@ -84,5 +120,8 @@ namespace Raven.Geom {
         public static bool operator !=(PointD left, PointD right) {
             return !left.Equals(right);
         }
+
+        //private
+
     }
 }

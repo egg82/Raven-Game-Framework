@@ -46,7 +46,7 @@ namespace Raven.Input.Core {
             for (int i = 0; i < controllers.Length; i++) {
                 if (controllers[i].IsConnected) {
                     connectedControllers++;
-                    State state = controllers[i].GetState();
+                    SharpDX.XInput.State state = controllers[i].GetState();
                     states[i] = state.Gamepad;
                     packetNumbers[i] = state.PacketNumber;
                 } else {
@@ -305,7 +305,7 @@ namespace Raven.Input.Core {
                 }
                 numControllers++;
 
-                State state = controllers[i].GetState();
+                SharpDX.XInput.State state = controllers[i].GetState();
                 if (state.PacketNumber == packetNumbers[i]) {
                     return;
                 }
