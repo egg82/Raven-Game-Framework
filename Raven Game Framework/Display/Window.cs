@@ -90,9 +90,9 @@ namespace Raven.Display {
         public void DrawGraphics() {
             lock (drawLock) {
                 window.Clear(Color.Transparent);
-
+                
                 if (painter.Count > 0) {
-                    for (int i = painter.Count; i >= 0; i--) {
+                    for (int i = painter.Count - 1; i >= 0; i--) {
                         painter[i]?.Draw(window, Transform.Identity, color);
                     }
                 }

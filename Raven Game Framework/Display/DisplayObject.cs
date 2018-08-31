@@ -116,6 +116,13 @@ namespace Raven.Display {
                 return base.X;
             }
             set {
+                if (value == base.X) {
+                    return;
+                }
+                if (double.IsNaN(value) || double.IsInfinity(value)) {
+                    throw new NotFiniteNumberException(value);
+                }
+
                 double oldX = base.X;
                 base.X = value;
                 local.X += value - oldX;
@@ -135,7 +142,9 @@ namespace Raven.Display {
 
                 double oldX = local.X;
                 local.X = value;
-                GlobalX += value - oldX;
+
+                double oldGlobalX = base.X;
+                base.X += value - oldGlobalX;
             }
         }
         public override double Width {
@@ -159,6 +168,13 @@ namespace Raven.Display {
                 return base.Y;
             }
             set {
+                if (value == base.Y) {
+                    return;
+                }
+                if (double.IsNaN(value) || double.IsInfinity(value)) {
+                    throw new NotFiniteNumberException(value);
+                }
+
                 double oldY = base.Y;
                 base.Y = value;
                 local.Y += value - oldY;
@@ -178,7 +194,9 @@ namespace Raven.Display {
 
                 double oldY = local.Y;
                 local.Y = value;
-                GlobalX += value - oldY;
+
+                double oldGlobalY = base.Y;
+                base.Y += value - oldGlobalY;
             }
         }
         public override double Height {
@@ -203,7 +221,7 @@ namespace Raven.Display {
             if (!visible) {
                 return;
             }
-            
+
             Color globalColor = parentColor * Color;
             renderArray[0] = new Vertex(new Vector2f((float) Skew.TopLeft.X, (float) Skew.TopLeft.Y), globalColor, new Vector2f((float) TextureBounds.X, (float) TextureBounds.Y));
             renderArray[1] = new Vertex(new Vector2f((float) (TextureBounds.Width + Skew.TopRight.X), (float) Skew.TopRight.Y), globalColor, new Vector2f((float) (TextureBounds.X + TextureBounds.Width), (float) TextureBounds.Y));
@@ -217,10 +235,11 @@ namespace Raven.Display {
         }
         protected internal Transform GetTransform() {
             Transform retVal = Transform.Identity;
-
-            retVal.Translate((float) GlobalX, (float) GlobalY);
-            retVal.Scale((float) Scale.X, (float) Scale.Y, (float) TransformOffset.X, (float) TransformOffset.Y);
-            retVal.Rotate((float) Rotation, (float) TransformOffset.X, (float) TransformOffset.Y);
+            
+            retVal.Translate((float) (GlobalX + TransformOffset.X), (float) (GlobalY + TransformOffset.Y));
+            retVal.Rotate((float) Rotation);
+            // Always scale last, as it tends to screw with the other operations
+            retVal.Scale((float) Scale.X, (float) Scale.Y, (float) -TransformOffset.X, (float) -TransformOffset.Y);
 
             return retVal;
         }

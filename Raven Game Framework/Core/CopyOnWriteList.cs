@@ -218,7 +218,7 @@ namespace Raven.Core {
                 }
 
                 T[] temp = backingArray;
-                int tempIndex = index;
+                int tempIndex = this.index;
 
                 return (index >= tempIndex) ? default(T) : temp[index];
             }
@@ -245,7 +245,7 @@ namespace Raven.Core {
                 }
 
                 T[] temp = backingArray;
-                int tempIndex = index;
+                int tempIndex = this.index;
 
                 return (index >= tempIndex) ? default(T) : temp[index];
             }
@@ -257,7 +257,7 @@ namespace Raven.Core {
                 }
 
                 T[] temp = backingArray;
-                int tempIndex = index;
+                int tempIndex = this.index;
 
                 return (index >= tempIndex) ? default(T) : temp[index];
             }

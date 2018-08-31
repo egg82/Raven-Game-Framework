@@ -136,7 +136,7 @@ namespace Raven.Display {
             Color globalColor = parentColor * Color;
             
             if (painter.Count > 0) {
-                for (int i = painter.Count; i >= 0; i--) {
+                for (int i = painter.Count - 1; i >= 0; i--) {
                     painter[i]?.Draw(target, globalTransform, globalColor);
                 }
             }

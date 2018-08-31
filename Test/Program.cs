@@ -118,6 +118,11 @@ namespace Test {
             Window window = new Window(800, 600, "Graphics", SFML.Window.Styles.Default, false);
             windows.Add(window);
             log.Info("Created window \"" + window.Title + "\"");
+
+            IInputEngine inputEngine = ServiceLocator.GetService<IInputEngine>();
+            log.Info("Got service " + inputEngine);
+            inputEngine.AddWindow(window);
+            
             window.AddState(new GraphicsState());
             log.Info("Added state to window \"" + window.Title + "\"");
         }
