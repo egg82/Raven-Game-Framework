@@ -9,11 +9,13 @@ namespace Raven.Display {
     public abstract class DisplayObject : QuadNode {
         //vars
         private volatile bool visible = true;
+        private DisplayObjectContainer parent = null;
         
         private RenderStates renderState = RenderStates.Default;
         private VertexArray renderArray = new VertexArray(PrimitiveType.Quads, 4);
 
         private PointD local = new PointD();
+        private PointD global = new PointD();
         private double rotation = 0.0d;
 
         //constructor
@@ -21,10 +23,11 @@ namespace Raven.Display {
             TextureBounds = new RectD();
             Color = new Color(255, 255, 255, 255);
             Skew = new Skew();
-            Skew.Changed += OnSkewChanged;
+            //Skew.Changed += OnSkewChanged;
             Scale = new PointD(1.0d, 1.0d);
             Scale.Changed += OnScaleChanged;
             TransformOffset = new PointD();
+            TransformOffset.Changed += OnTransformChanged;
             Graphics = new Graphics();
             Graphics.Changed += OnGraphicsChanged;
         }
@@ -40,8 +43,18 @@ namespace Raven.Display {
                 visible = value;
             }
         }
-
-        public DisplayObjectContainer Parent { get; internal set; }
+        
+        public DisplayObjectContainer Parent {
+            get {
+                return parent;
+            }
+            internal set {
+                parent = value;
+                // TODO GlobalX & GlobalY should be re-checked when set is called
+                // TODO Parent movement should be tracked to set new GlobalX & GlobalY
+                ApplyBounds();
+            }
+        }
         public DisplayObject Root {
             get {
                 DisplayObject root = Parent?.Root;
@@ -117,19 +130,20 @@ namespace Raven.Display {
 
         public double GlobalX {
             get {
-                return base.X;
+                return global.X;
             }
             set {
-                if (value == base.X) {
+                if (value == global.X) {
                     return;
                 }
                 if (double.IsNaN(value) || double.IsInfinity(value)) {
                     throw new NotFiniteNumberException(value);
                 }
-
-                double oldX = base.X;
-                base.X = value;
+                
+                double oldX = global.X;
+                global.X = value;
                 local.X += value - oldX;
+                ApplyBounds();
             }
         }
         public override double X {
@@ -143,12 +157,14 @@ namespace Raven.Display {
                 if (double.IsNaN(value) || double.IsInfinity(value)) {
                     throw new NotFiniteNumberException(value);
                 }
-
+                
                 double oldX = local.X;
                 local.X = value;
 
-                double oldGlobalX = base.X;
-                base.X += value - oldGlobalX;
+                double oldGlobalX = global.X;
+                // TODO GlobalX should add parent's GlobalX when setting via local
+                global.X += value - oldGlobalX;
+                ApplyBounds();
             }
         }
         public override double Width {
@@ -169,19 +185,20 @@ namespace Raven.Display {
         }
         public double GlobalY {
             get {
-                return base.Y;
+                return global.Y;
             }
             set {
-                if (value == base.Y) {
+                if (value == global.Y) {
                     return;
                 }
                 if (double.IsNaN(value) || double.IsInfinity(value)) {
                     throw new NotFiniteNumberException(value);
                 }
-
-                double oldY = base.Y;
-                base.Y = value;
+                
+                double oldY = global.Y;
+                global.Y = value;
                 local.Y += value - oldY;
+                ApplyBounds();
             }
         }
         public override double Y {
@@ -195,12 +212,14 @@ namespace Raven.Display {
                 if (double.IsNaN(value) || double.IsInfinity(value)) {
                     throw new NotFiniteNumberException(value);
                 }
-
+                
                 double oldY = local.Y;
                 local.Y = value;
 
-                double oldGlobalY = base.Y;
-                base.Y += value - oldGlobalY;
+                double oldGlobalY = global.Y;
+                // TODO GlobalY should add parent's GlobalY when setting via local
+                global.Y += value - oldGlobalY;
+                ApplyBounds();
             }
         }
         public override double Height {
@@ -251,17 +270,26 @@ namespace Raven.Display {
             return retVal;
         }
         private void ApplyBounds() {
-            // TODO Fix & Uncomment
-            //base.X = (base.X + Math.Max(Skew.TopLeft.X, Skew.BottomLeft.X)) * Scale.X;
-            //base.Y = (base.Y + Math.Max(Skew.TopLeft.Y, Skew.BottomLeft.Y)) * Scale.Y;
-            base.Width = (Math.Max(TextureBounds.Width, Graphics.Width) + Math.Max(Skew.TopRight.X, Skew.BottomRight.X)) * Scale.X;
-            base.Height = (Math.Max(TextureBounds.Height, Graphics.Height) + Math.Max(Skew.BottomLeft.Y, Skew.BottomRight.Y)) * Scale.Y;
+            // TODO Think about possibly taking Skew into account. Lot of work and may not actually be worth it
+            /*base.X = (global.X + Math.Min(Skew.TopLeft.X, Skew.BottomLeft.X)) * Scale.X;
+            base.Y = (global.Y + Math.Min(Skew.TopLeft.Y, Skew.BottomLeft.Y)) * Scale.Y;
+            base.Width = Math.Max((TextureBounds.Width + Math.Max(Skew.TopRight.X, Skew.BottomRight.X)) * Scale.X, Graphics.Width + Math.Max(Skew.TopRight.X, Skew.BottomRight.X));
+            base.Height = Math.Max((TextureBounds.Height + Math.Max(Skew.BottomLeft.Y, Skew.BottomRight.Y)) * Scale.Y, Graphics.Height + Math.Max(Skew.BottomLeft.Y, Skew.BottomRight.Y));*/
+
+            // TODO scale multiplier depends on (an inverse of?) TransformOffset and original Width/Height
+            base.X = global.X * Scale.X;
+            base.Y = global.Y * Scale.Y;
+            base.Width = Math.Max(TextureBounds.Width * Scale.X, Graphics.Width);
+            base.Height = Math.Max(TextureBounds.Height * Scale.Y, Graphics.Height);
         }
 
-        private void OnSkewChanged(object sender, EventArgs e) {
+        /*private void OnSkewChanged(object sender, EventArgs e) {
+            ApplyBounds();
+        }*/
+        private void OnScaleChanged(object sender, EventArgs e) {
             ApplyBounds();
         }
-        private void OnScaleChanged(object sender, EventArgs e) {
+        private void OnTransformChanged(object sender, EventArgs e) {
             ApplyBounds();
         }
         private void OnGraphicsChanged(object sender, EventArgs e) {

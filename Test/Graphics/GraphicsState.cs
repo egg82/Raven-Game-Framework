@@ -71,6 +71,11 @@ namespace Test.Graphics {
             ball.TransformOffset.Y = ball.Height / 2.0d;
             ball2.Color = new Color(255, 255, 255, 120);
 
+            /*ball2.Skew.TopLeft.X -= 20.0d;
+            ball2.Skew.TopLeft.Y -= 20.0d;
+            ball2.Skew.BottomRight.X += 20.0d;
+            ball2.Skew.BottomRight.Y += 20.0d;*/
+
             Window.QuadTree.Add(ball);
             Window.QuadTree.Add(ball2);
             AddChild(ball);
