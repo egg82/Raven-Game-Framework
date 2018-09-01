@@ -120,6 +120,7 @@
     <Compile Include="Audio\Core\LoggingAudio.cs" />
     <Compile Include="Core\AffinityThread.cs" />
     <Compile Include="Core\CopyOnWriteList.cs" />
+    <Compile Include="Display\Core\Graphics.cs" />
     <Compile Include="Geom\Noise\INoise.cs" />
     <Compile Include="Geom\Noise\PerlinNoise.cs" />
     <Compile Include="Geom\Noise\SimplexNoise.cs" />
@@ -168,6 +169,7 @@
     <Compile Include="Utils\MathUtil.cs" />
     <Compile Include="Utils\PerlinUtil.cs" />
     <Compile Include="Utils\SimplexUtil.cs" />
+    <Compile Include="Utils\TextureUtil.cs" />
     <Compile Include="Utils\ThreadUtil.cs" />
   </ItemGroup>
   <ItemGroup>

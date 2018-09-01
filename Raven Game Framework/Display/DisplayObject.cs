@@ -10,7 +10,6 @@ namespace Raven.Display {
         //vars
         private volatile bool visible = true;
         
-        private Color previousParentColor = Color.Transparent;
         private RenderStates renderState = RenderStates.Default;
         private VertexArray renderArray = new VertexArray(PrimitiveType.Quads, 4);
 
@@ -26,6 +25,8 @@ namespace Raven.Display {
             Scale = new PointD(1.0d, 1.0d);
             Scale.Changed += OnScaleChanged;
             TransformOffset = new PointD();
+            Graphics = new Graphics();
+            Graphics.Changed += OnGraphicsChanged;
         }
 
         //public
@@ -48,6 +49,7 @@ namespace Raven.Display {
             }
         }
         
+        public Graphics Graphics { get; }
         public RectD TextureBounds { get; }
         public Color Color { get; set; }
         public Skew Skew { get; }
@@ -100,6 +102,7 @@ namespace Raven.Display {
             }
             set {
                 renderState.BlendMode = value;
+                Graphics.BlendMode = value;
             }
         }
         public Shader Shader {
@@ -108,6 +111,7 @@ namespace Raven.Display {
             }
             set {
                 renderState.Shader = value;
+                Graphics.Shader = value;
             }
         }
 
@@ -222,20 +226,23 @@ namespace Raven.Display {
                 return;
             }
 
+            Transform globalTransform = parentTransform * GetTransform();
             Color globalColor = parentColor * Color;
+
+            Graphics.Draw(target, parentTransform, globalColor, Skew, GlobalX, GlobalY, Rotation, TransformOffset);
+            
             renderArray[0] = new Vertex(new Vector2f((float) Skew.TopLeft.X, (float) Skew.TopLeft.Y), globalColor, new Vector2f((float) TextureBounds.X, (float) TextureBounds.Y));
             renderArray[1] = new Vertex(new Vector2f((float) (TextureBounds.Width + Skew.TopRight.X), (float) Skew.TopRight.Y), globalColor, new Vector2f((float) (TextureBounds.X + TextureBounds.Width), (float) TextureBounds.Y));
             renderArray[2] = new Vertex(new Vector2f((float) (TextureBounds.Width + Skew.BottomRight.X), (float) (TextureBounds.Height + Skew.BottomRight.Y)), globalColor, new Vector2f((float) (TextureBounds.X + TextureBounds.Width), (float) (TextureBounds.Y + TextureBounds.Height)));
             renderArray[3] = new Vertex(new Vector2f((float) Skew.BottomLeft.X, (float) (TextureBounds.Height + Skew.BottomLeft.Y)), globalColor, new Vector2f((float) TextureBounds.X, (float) (TextureBounds.Y + TextureBounds.Height)));
-
-            Transform globalTransform = parentTransform * GetTransform();
+            
             renderState.Transform = globalTransform;
             
             target.Draw(renderArray, renderState);
         }
         protected internal Transform GetTransform() {
             Transform retVal = Transform.Identity;
-            
+
             retVal.Translate((float) (GlobalX + TransformOffset.X), (float) (GlobalY + TransformOffset.Y));
             retVal.Rotate((float) Rotation);
             // Always scale last, as it tends to screw with the other operations
@@ -244,14 +251,20 @@ namespace Raven.Display {
             return retVal;
         }
         private void ApplyBounds() {
-            base.Width = (Math.Max(TextureBounds.Width, 1.0d) + Math.Max(Skew.TopRight.X, Skew.BottomRight.X)) * Scale.X;
-            base.Height = (Math.Max(TextureBounds.Height, 1.0d) + Math.Max(Skew.BottomLeft.Y, Skew.BottomRight.Y)) * Scale.Y;
+            // TODO Fix & Uncomment
+            //base.X = (base.X + Math.Max(Skew.TopLeft.X, Skew.BottomLeft.X)) * Scale.X;
+            //base.Y = (base.Y + Math.Max(Skew.TopLeft.Y, Skew.BottomLeft.Y)) * Scale.Y;
+            base.Width = (Math.Max(TextureBounds.Width, Graphics.Width) + Math.Max(Skew.TopRight.X, Skew.BottomRight.X)) * Scale.X;
+            base.Height = (Math.Max(TextureBounds.Height, Graphics.Height) + Math.Max(Skew.BottomLeft.Y, Skew.BottomRight.Y)) * Scale.Y;
         }
 
         private void OnSkewChanged(object sender, EventArgs e) {
             ApplyBounds();
         }
         private void OnScaleChanged(object sender, EventArgs e) {
+            ApplyBounds();
+        }
+        private void OnGraphicsChanged(object sender, EventArgs e) {
             ApplyBounds();
         }
     }
