@@ -3,15 +3,16 @@ using System.Drawing;
 
 namespace Raven.Geom {
     public class PointD {
-        //vars
-        public static readonly PointD Empty = new PointD(0.0d, 0.0d);
-
+        // events
         internal event EventHandler<EventArgs> Changed = null;
+
+        // vars
+        public static readonly PointD Empty = new PointD(0.0d, 0.0d);
 
         private double x = 0.0d;
         private double y = 0.0d;
 
-        //constructor
+        // constructor
         public PointD() : this(0.0d, 0.0d) {
 
         }
@@ -20,7 +21,7 @@ namespace Raven.Geom {
             this.y = y;
         }
 
-        //public
+        // public
         public double X {
             get {
                 return x;
@@ -49,7 +50,7 @@ namespace Raven.Geom {
         }
         public bool IsEmpty {
             get {
-                return (X == 0.0d && Y == 0.0d) ? true : false;
+                return X == 0.0d && Y == 0.0d;
             }
         }
 
@@ -74,17 +75,21 @@ namespace Raven.Geom {
         }
 
         public override bool Equals(object obj) {
-            if (obj is PointD) {
-                return (X == ((PointD) obj).X && Y == ((PointD) obj).Y) ? true : false;
-            }
-            if (obj is PointF) {
-                return ((float) X == ((PointF) obj).X && (float) Y == ((PointF) obj).Y) ? true : false;
-            }
-            if (obj is Point) {
-                return (X == ((Point) obj).X && Y == ((Point) obj).Y) ? true : false;
+            if (ReferenceEquals(this, obj)) {
+                return true;
             }
 
-            return base.Equals(obj);
+            if (obj is PointD d) {
+                return X == d.X && Y == d.Y;
+            }
+            if (obj is PointF f) {
+                return (float) X == f.X && (float) Y == f.Y;
+            }
+            if (obj is Point i) {
+                return X == i.X && Y == i.Y;
+            }
+
+            return false;
         }
         public override int GetHashCode() {
             var hashCode = 1861411795;
@@ -121,7 +126,7 @@ namespace Raven.Geom {
             return !left.Equals(right);
         }
 
-        //private
+        // private
 
     }
 }

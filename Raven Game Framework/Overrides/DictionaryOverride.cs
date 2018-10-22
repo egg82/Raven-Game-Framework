@@ -2,9 +2,6 @@
 
 namespace Raven.Overrides {
     internal static class DictionaryOverride {
-        //vars
-
-        //public
         public static TValue AddIfAbsent<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey key, TValue value) {
             TValue result = default(TValue);
 
@@ -15,8 +12,5 @@ namespace Raven.Overrides {
 
             return result;
         }
-
-        //private
-
     }
 }

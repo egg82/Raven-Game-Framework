@@ -3,21 +3,21 @@ using System.Threading.Atomics;
 
 namespace Raven.Input {
     public abstract class AbstractInputEngine : IInputEngine {
-        //vars
+        // vars
         internal readonly AbstractMouse mouse = null;
         internal readonly AbstractKeyboard keyboard = null;
         internal readonly AbstractControllers controllers = null;
 
-        protected static AtomicBoolean usingController = new AtomicBoolean(false);
+        protected static readonly AtomicBoolean usingController = new AtomicBoolean(false);
 
-        //constructor
-        public AbstractInputEngine(AbstractMouse mouse, AbstractKeyboard keyboard, AbstractControllers controllers) {
+        // constructor
+        protected AbstractInputEngine(AbstractMouse mouse, AbstractKeyboard keyboard, AbstractControllers controllers) {
             this.mouse = mouse;
             this.keyboard = keyboard;
             this.controllers = controllers;
         }
 
-        //public
+        // public
         public IMouse Mouse {
             get {
                 return mouse;
@@ -45,7 +45,7 @@ namespace Raven.Input {
 
         public abstract void UpdateControllers();
 
-        //private
+        // private
 
     }
 }

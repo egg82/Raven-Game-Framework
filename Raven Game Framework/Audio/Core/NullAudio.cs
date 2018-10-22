@@ -3,40 +3,30 @@ using Raven.Events;
 
 namespace Raven.Audio.Core {
     public class NullAudio : AbstractAudio {
-        //vars
+        // events
         public override event EventHandler<ExceptionEventArgs> Error;
 
-        //constructor
+        // vars
+
+        // constructor
         internal NullAudio(AudioType type, AudioFormat format, byte[] data, int device) : base(type, format, data, device) {
-            
+            PositionInBytes = 0L;
+            PositionInTime = TimeSpan.Zero;
         }
         
         public override void Play(bool repeat = false) {
-            base.playing.Value = true;
+            playing.Value = true;
         }
         public override void Pause() {
-            base.playing.Value = false;
+            playing.Value = false;
         }
         public override void Stop() {
-            base.playing.Value = false;
+            playing.Value = false;
         }
 
-        public override long PositionInBytes {
-            get {
-                return 0L;
-            }
-            set {
-                
-            }
-        }
-        public override TimeSpan PositionInTime {
-            get {
-                return TimeSpan.Zero;
-            }
-            set {
-                
-            }
-        }
+        public override long PositionInBytes { get; set; }
+        public override TimeSpan PositionInTime { get; set; }
+
         public override long LengthInBytes {
             get {
                 return data.LongLength;
@@ -44,14 +34,11 @@ namespace Raven.Audio.Core {
         }
         public override TimeSpan LengthInTime {
             get {
-                return TimeSpan.MaxValue;
+                return TimeSpan.Zero;
             }
         }
 
-        //private
-        internal virtual void Init(int device) {
-            playing.Value = false;
-            this.device = device;
-        }
+        // private
+
     }
 }

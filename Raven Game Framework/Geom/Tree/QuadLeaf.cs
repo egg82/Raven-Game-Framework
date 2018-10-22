@@ -2,13 +2,13 @@
 
 namespace Raven.Geom.Tree {
     class QuadLeaf<T> where T : QuadNode {
-        //vars
+        // vars
         private QuadLeaf<T>[] leafs = new QuadLeaf<T>[4];
-        private HashSet<T> objects = new HashSet<T>();
+        private readonly HashSet<T> objects = new HashSet<T>();
 
         private readonly QuadLeaf<T> parent = null;
 
-        //constructor
+        // constructor
         public QuadLeaf(double x, double y, double width, double height) : this(null, x, y, width, height) {
             
         }
@@ -19,7 +19,7 @@ namespace Raven.Geom.Tree {
             Height = height;
         }
 
-        //public
+        // public
         public double X { get; private set; }
         public double Y { get; private set; }
         public double Width { get; private set; }
@@ -94,11 +94,9 @@ namespace Raven.Geom.Tree {
         }
 
         public HashSet<T> Query(double x, double y, double width, double height) {
-            if (width == 0.0d || height == 0.0d) {
-                if (ContainsPoint(X, Y, Width, Height, x, y)) {
-                    // We contain the point
-                    return GetIntersectingNodes(x, y, width, height);
-                }
+            if ((width == 0.0d || height == 0.0d) && ContainsPoint(X, Y, Width, Height, x, y)) {
+                // We contain the point
+                return GetIntersectingNodes(x, y, width, height);
             }
 
             if (ContainsRect(x, y, width, height, X, Y, Width, Height)) {
@@ -113,10 +111,10 @@ namespace Raven.Geom.Tree {
             }
         }
 
-        //private
+        // private
         private bool Empty {
             get {
-                return (objects.Count == 0 && leafs[0] == null) ? true : false;
+                return objects.Count == 0 && leafs[0] == null;
             }
         }
 
@@ -257,13 +255,13 @@ namespace Raven.Geom.Tree {
         }
 
         private bool ContainsPoint(double x, double y, double width, double height, double px, double py) {
-            return ((px >= x && px <= x + width) && (py >= y && py <= y + width)) ? true : false;
+            return (px >= x && px <= x + width) && (py >= y && py <= y + height);
         }
         private bool ContainsRect(double x, double y, double width, double height, double rx, double ry, double rwidth, double rheight) {
-            return (rx <= x && ry <= y && rx + rwidth <= x + width && ry + rheight <= y + height) ? true : false;
+            return rx <= x && ry <= y && rx + rwidth <= x + width && ry + rheight <= y + height;
         }
         private bool IntersectsRect(double x, double y, double width, double height, double rx, double ry, double rwidth, double rheight) {
-            return ((x + width >= rx && (y + height >= ry || ry + rheight > y)) || (y + height >= ry && (x + width >= rx || rx + rwidth > x))) ? true : false;
+            return (x + width >= rx && (y + height >= ry || ry + rheight > y)) || (y + height >= ry && (x + width >= rx || rx + rwidth > x));
         }
     }
 }

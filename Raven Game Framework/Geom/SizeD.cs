@@ -3,10 +3,10 @@ using System.Drawing;
 
 namespace Raven.Geom {
     public class SizeD {
-        //vars
+        // vars
         public static readonly SizeD Empty = new SizeD(0.0d, 0.0d);
 
-        //constructor
+        // constructor
         public SizeD() : this(0.0d, 0.0d) {
 
         }
@@ -31,12 +31,12 @@ namespace Raven.Geom {
             Height = height;
         }
 
-        //public
+        // public
         public double Width { get; set; }
         public double Height { get; set; }
         public bool IsEmpty {
             get {
-                return (Width == 0.0d && Height == 0.0d) ? true : false;
+                return Width == 0.0d && Height == 0.0d;
             }
         }
 
@@ -47,17 +47,21 @@ namespace Raven.Geom {
             return new SizeD(sz1.Width - sz2.Width, sz1.Height - sz2.Height);
         }
         public override bool Equals(object obj) {
-            if (obj is SizeD) {
-                return (Width == ((SizeD) obj).Width && Height == ((SizeD) obj).Height) ? true : false;
-            }
-            if (obj is SizeF) {
-                return ((float) Width == ((SizeF) obj).Width && (float) Height == ((SizeF) obj).Height) ? true : false;
-            }
-            if (obj is Size) {
-                return (Width == ((Size) obj).Width && Height == ((Size) obj).Height) ? true : false;
+            if (ReferenceEquals(this, obj)) {
+                return true;
             }
 
-            return base.Equals(obj);
+            if (obj is SizeD d) {
+                return Width == d.Width && Height == d.Height;
+            }
+            if (obj is SizeF f) {
+                return (float) Width == f.Width && (float) Height == f.Height;
+            }
+            if (obj is Size i) {
+                return Width == i.Width && Height == i.Height;
+            }
+
+            return false;
         }
         public override int GetHashCode() {
             var hashCode = 859600377;
@@ -98,7 +102,7 @@ namespace Raven.Geom {
             return new PointD(size.Width, size.Height);
         }
 
-        //private
+        // private
 
     }
 }

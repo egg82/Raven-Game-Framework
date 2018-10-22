@@ -1,13 +1,14 @@
 ﻿using JoshuaKearney.Collections;
-using Raven.Core;
 using Raven.Geom.Tree;
 using SFML.Graphics;
 using SFML.Window;
 using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Raven.Display {
     public class Window {
-        //vars
+        // events
         internal event EventHandler<KeyEventArgs> KeyPressed = null;
         internal event EventHandler<KeyEventArgs> KeyReleased = null;
 
@@ -16,6 +17,7 @@ namespace Raven.Display {
         internal event EventHandler<MouseButtonEventArgs> MouseButtonPressed = null;
         internal event EventHandler<MouseButtonEventArgs> MouseButtonReleased = null;
 
+        // vars
         public event EventHandler<EventArgs> GainedFocus = null;
         public event EventHandler<EventArgs> LostFocus = null;
         public event EventHandler<EventArgs> Closed = null;
@@ -24,17 +26,16 @@ namespace Raven.Display {
         private readonly object windowLock = new object();
         private readonly object updateLock = new object();
         private readonly object drawLock = new object();
-
-        private readonly QuadTree<DisplayObject> quadTree = null;
-        private CopyOnWriteList<State> painter = new CopyOnWriteList<State>();
-        private ConcurrentSet<State> states = new ConcurrentSet<State>();
+        
+        private readonly List<State> painter = new List<State>();
+        private readonly ConcurrentSet<State> states = new ConcurrentSet<State>();
         private readonly Color color = new Color(255, 255, 255, 255);
 
         private string title = null;
 
-        //constructor
+        // constructor
         public Window(uint width, uint height, string title, Styles style = Styles.Default, bool vsync = true, ushort antialiasing = 16) {
-            window = new RenderWindow(new VideoMode(width, height), title, style, new ContextSettings(24, 8, antialiasing));
+            Interlocked.Exchange(ref window, new RenderWindow(new VideoMode(width, height), title, style, new ContextSettings(24, 8, antialiasing)));
             this.title = title;
 
             window.KeyPressed += OnKeyPressed;
@@ -52,10 +53,10 @@ namespace Raven.Display {
             window.SetVerticalSyncEnabled(vsync);
             window.SetActive(false);
 
-            quadTree = new QuadTree<DisplayObject>(width, height);
+            QuadTree = new QuadTree<DisplayObject>(width, height);
         }
 
-        //public
+        // public
         public string Title {
             get {
                 return title;
@@ -102,11 +103,7 @@ namespace Raven.Display {
             }
         }
 
-        public QuadTree<DisplayObject> QuadTree {
-            get {
-                return quadTree;
-            }
-        }
+        public QuadTree<DisplayObject> QuadTree { get; private set; }
 
         public bool AddState(State state) {
             if (state == null) {
@@ -149,7 +146,7 @@ namespace Raven.Display {
             return states.Contains(state);
         }
 
-        //private
+        // private
         private void OnKeyPressed(object sender, KeyEventArgs e) {
             KeyPressed?.Invoke(this, e);
         }

@@ -6,14 +6,14 @@ using System.IO;
 
 namespace Raven.Utils {
     public class TextureUtil {
-        //vars
+        // vars
 
-        //constructor
-        public TextureUtil() {
+        // constructor
+        private TextureUtil() {
 
         }
 
-        //public
+        // public
         public static Texture FromBitmap(Bitmap bitmap) {
             if (bitmap == null) {
                 throw new ArgumentNullException("bitmap");
@@ -25,7 +25,7 @@ namespace Raven.Utils {
             }
         }
 
-        //private
+        // private
 
     }
 }

@@ -2,24 +2,18 @@
 
 namespace Raven.Events {
     public class ExceptionEventArgs : EventArgs {
-        //vars
+        // vars
         public static readonly new ExceptionEventArgs Empty = new ExceptionEventArgs(null);
 
-        private Exception ex = null;
-
-        //constructor
+        // constructor
         public ExceptionEventArgs(Exception ex) {
-            this.ex = ex;
+            Exception = ex;
         }
 
-        //public
-        public Exception Exception {
-            get {
-                return ex;
-            }
-        }
+        // public
+        public Exception Exception { get; private set; }
 
-        //private
+        // private
 
     }
 }

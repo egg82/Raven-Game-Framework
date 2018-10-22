@@ -6,18 +6,18 @@ using System.Threading.Atomics;
 
 namespace Raven.Core {
     public class UpdateDeltaLoop {
-        //vars
+        // vars
         private readonly Action func = null;
         private readonly Action<double> deltaFunc = null;
 
         private double targetFramerate = 0.0d;
         private long targetTicks = 0L;
         private long driftTargetTicks = 0L;
-        private volatile int spinIterations = 1;
+        private int spinIterations = 1;
 
-        private AtomicBoolean running = new AtomicBoolean(false);
+        private readonly AtomicBoolean running = new AtomicBoolean(false);
 
-        //constructor
+        // constructor
         public UpdateDeltaLoop(Action func, double targetFramerate, int spinIterations = 10) {
             if (func == null) {
                 throw new ArgumentNullException("func");
@@ -25,9 +25,9 @@ namespace Raven.Core {
 
             this.func = func;
             this.targetFramerate = MathUtil.Clamp(0.0d, double.MaxValue, targetFramerate);
-            this.targetTicks = (targetFramerate == 0.0d) ? 0L : (long) Math.Floor((1000.0d / targetFramerate) * TimeSpan.TicksPerMillisecond);
+            targetTicks = (targetFramerate == 0.0d) ? 0L : (long) Math.Floor((1000.0d / targetFramerate) * TimeSpan.TicksPerMillisecond);
             driftTargetTicks = targetTicks;
-            this.spinIterations = spinIterations;
+            Interlocked.Exchange(ref this.spinIterations, spinIterations);
         }
         public UpdateDeltaLoop(Action<double> deltaFunc, double targetFramerate, int spinIterations = 10) {
             if (deltaFunc == null) {
@@ -36,12 +36,12 @@ namespace Raven.Core {
 
             this.deltaFunc = deltaFunc;
             this.targetFramerate = MathUtil.Clamp(0.0d, double.MaxValue, targetFramerate);
-            this.targetTicks = (targetFramerate == 0.0d) ? 0L : (long) Math.Floor((1000.0d / targetFramerate) * TimeSpan.TicksPerMillisecond);
+            targetTicks = (targetFramerate == 0.0d) ? 0L : (long) Math.Floor((1000.0d / targetFramerate) * TimeSpan.TicksPerMillisecond);
             driftTargetTicks = targetTicks;
-            this.spinIterations = spinIterations;
+            Interlocked.Exchange(ref this.spinIterations, spinIterations);
         }
 
-        //public
+        // public
         public double TargetFramerate {
             get {
                 return this.targetFramerate;
@@ -51,8 +51,8 @@ namespace Raven.Core {
                     return;
                 }
 
-                this.targetFramerate = value;
-                this.targetTicks = (targetFramerate == 0.0d) ? 0L : (long) Math.Floor((1000.0d / targetFramerate) * TimeSpan.TicksPerMillisecond);
+                targetFramerate = value;
+                targetTicks = (targetFramerate == 0.0d) ? 0L : (long) Math.Floor((1000.0d / targetFramerate) * TimeSpan.TicksPerMillisecond);
                 driftTargetTicks = targetTicks;
             }
         }
@@ -61,7 +61,7 @@ namespace Raven.Core {
                 return spinIterations;
             }
             set {
-                spinIterations = MathUtil.Clamp(1, int.MaxValue, value);
+                Interlocked.Exchange(ref spinIterations, MathUtil.Clamp(1, int.MaxValue, value));
             }
         }
 
@@ -83,7 +83,7 @@ namespace Raven.Core {
             running.Value = false;
         }
 
-        //private
+        // private
         private long Update(Stopwatch watch, long lastFrameTime, ref long drift) {
             if (targetFramerate == 0.0d) {
                 return targetTicks; // Faking perfect accuracy

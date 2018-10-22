@@ -1,15 +1,15 @@
 ﻿namespace Raven.Display {
     public class Sprite : DisplayObjectContainer {
-        //vars
+        // vars
 
-        //constructor
+        // constructor
         public Sprite() : base() {
 
         }
 
-        //public
+        // public
 
-        //private
+        // private
 
     }
 }

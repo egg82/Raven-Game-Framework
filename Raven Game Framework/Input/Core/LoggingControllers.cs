@@ -1,15 +1,14 @@
 ﻿using log4net;
-using Raven.Display;
 using Raven.Input.Events;
 using System.Reflection;
 using System.Threading.Atomics;
 
 namespace Raven.Input.Core {
     public class LoggingControllers : Controllers {
-        //vars
+        // vars
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        //constructor
+        // constructor
         internal LoggingControllers(AtomicBoolean usingController) : base(usingController) {
             log.Debug("Controllers handler created.");
 
@@ -19,7 +18,7 @@ namespace Raven.Input.Core {
             TriggerPressed += OnTriggerPressed;
         }
 
-        //public
+        // public
         public override double StickDeadzone {
             get {
                 return base.StickDeadzone;
@@ -44,7 +43,7 @@ namespace Raven.Input.Core {
             base.Vibrate(controller, leftIntensity, rightIntensity);
         }
 
-        //private
+        // private
         private void OnButtonDown(object sender, ButtonEventArgs e) {
             log.Debug("ButtonDown controller #" + e.Controller + " with code=" + e.Code);
         }

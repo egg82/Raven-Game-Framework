@@ -1,6 +1,7 @@
 ﻿using NAudio.Vorbis;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using Raven.Audio.Exceptions;
 using Raven.Events;
 using Raven.Utils;
 using System;
@@ -8,21 +9,48 @@ using System.IO;
 
 namespace Raven.Audio.Core {
     public class Audio : AbstractAudio {
-        //vars
+        // events
         public override event EventHandler<ExceptionEventArgs> Error = null;
 
-        private MemoryStream byteStream = null;
-        private WaveStream waveStream = null;
-        private VolumeSampleProvider volumeProvider = null;
-        private PanningSampleProvider panningProvider = null;
-        private WaveOutEvent waveOut = new WaveOutEvent();
+        // vars
+        private readonly MemoryStream byteStream = null;
+        private readonly WaveStream waveStream = null;
+        private readonly VolumeSampleProvider volumeProvider = null;
+        private readonly PanningSampleProvider panningProvider = null;
+        private readonly WaveOutEvent waveOut = new WaveOutEvent();
 
-        //constructor
+        // constructor
         internal Audio(AudioType type, AudioFormat format, byte[] data, int device) : base(type, format, data, device) {
-            Init(device);
+            playing.Value = false;
+            
+            waveOut.DeviceNumber = device;
+            waveOut.PlaybackStopped += OnPlaybackComplete;
+
+            byteStream = new MemoryStream(data);
+            if (Format == AudioFormat.AIFF) {
+                waveStream = new AiffFileReader(byteStream);
+            } else if (Format == AudioFormat.WAV) {
+                waveStream = new WaveFileReader(byteStream);
+            } else if (Format == AudioFormat.MP3) {
+                waveStream = new Mp3FileReader(byteStream);
+            } else if (Format == AudioFormat.Vorbis) {
+                waveStream = new VorbisWaveReader(byteStream);
+            }
+            volumeProvider = new VolumeSampleProvider(waveStream.ToSampleProvider()) {
+                Volume = (float) Volume
+            };
+
+            if (waveStream.WaveFormat.Channels == 1) {
+                panningProvider = new PanningSampleProvider(volumeProvider) {
+                    Pan = (float) Pan
+                };
+                waveOut.Init(panningProvider);
+            } else {
+                waveOut.Init(volumeProvider);
+            }
         }
 
-        //public
+        // public
         public override double Volume {
             get {
                 return base.Volume;
@@ -42,7 +70,7 @@ namespace Raven.Audio.Core {
             }
             set {
                 if (panningProvider == null) {
-                    throw new Exception("Audio must be mono to use panning.");
+                    throw new PanningException(waveOut);
                 }
                 if (base.Pan == value) {
                     return;
@@ -50,6 +78,15 @@ namespace Raven.Audio.Core {
 
                 base.Pan = value;
                 panningProvider.Pan = (float) base.Pan;
+            }
+        }
+        public override int Device {
+            get {
+                return base.Device;
+            }
+            internal set {
+                waveOut.DeviceNumber = value;
+                base.Device = value;
             }
         }
 
@@ -90,6 +127,7 @@ namespace Raven.Audio.Core {
                 waveStream.CurrentTime = value;
             }
         }
+
         public override long LengthInBytes {
             get {
                 return data.LongLength;
@@ -101,42 +139,7 @@ namespace Raven.Audio.Core {
             }
         }
 
-        //private
-        internal virtual void Init(int device) {
-            waveOut.PlaybackStopped -= OnPlaybackComplete;
-            waveOut?.Stop();
-            waveOut?.Dispose();
-            waveStream?.Dispose();
-            byteStream?.Dispose();
-            
-            playing.Value = false;
-
-            this.device = device;
-            waveOut.DeviceNumber = device;
-            waveOut.PlaybackStopped += OnPlaybackComplete;
-
-            byteStream = new MemoryStream(data);
-            if (Format == AudioFormat.AIFF) {
-                waveStream = new AiffFileReader(byteStream);
-            } else if (Format == AudioFormat.WAV) {
-                waveStream = new WaveFileReader(byteStream);
-            } else if (Format == AudioFormat.MP3) {
-                waveStream = new Mp3FileReader(byteStream);
-            } else if (Format == AudioFormat.Vorbis) {
-                waveStream = new VorbisWaveReader(byteStream);
-            }
-            volumeProvider = new VolumeSampleProvider(waveStream.ToSampleProvider());
-            volumeProvider.Volume = (float) Volume;
-
-            if (waveStream.WaveFormat.Channels == 1) {
-                panningProvider = new PanningSampleProvider(volumeProvider);
-                panningProvider.Pan = (float) Pan;
-                waveOut.Init(panningProvider);
-            } else {
-                waveOut.Init(volumeProvider);
-            }
-        }
-        
+        // private
         protected virtual void OnPlaybackComplete(object sender, StoppedEventArgs e) {
             if (e.Exception != null) {
                 Error?.Invoke(this, new ExceptionEventArgs(e.Exception));

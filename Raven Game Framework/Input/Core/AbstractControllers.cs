@@ -3,32 +3,34 @@ using Raven.Geom;
 using Raven.Input.Enums;
 using Raven.Input.Events;
 using System;
+using System.Threading;
 using System.Threading.Atomics;
 
 namespace Raven.Input.Core {
     public abstract class AbstractControllers : IControllers {
-        //vars
+        // events
         public abstract event EventHandler<ButtonEventArgs> ButtonDown;
         public abstract event EventHandler<ButtonEventArgs> ButtonUp;
         public abstract event EventHandler<StickEventArgs> StickMoved;
         public abstract event EventHandler<TriggerEventArgs> TriggerPressed;
 
-        private volatile bool supported = true;
+        // vars
+        private int supported = 1;
 
         protected AtomicBoolean usingController = null;
 
-        //constructor
-        internal AbstractControllers(AtomicBoolean usingController) {
+        // constructor
+        protected AbstractControllers(AtomicBoolean usingController) {
             this.usingController = usingController;
         }
 
-        //public
+        // public
         public bool Supported {
             get {
-                return supported;
+                return supported != 0;
             }
             set {
-                supported = value;
+                Interlocked.Exchange(ref supported, value ? 1 : 0);
             }
         }
         
@@ -42,7 +44,7 @@ namespace Raven.Input.Core {
         public abstract PointD GetStickPosition(int controller, XboxSide side);
         public abstract void Vibrate(int controller, double leftIntensity, double rightIntensity);
 
-        //private
+        // private
         internal abstract void Update(Window window);
     }
 }

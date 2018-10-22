@@ -2,15 +2,15 @@
 
 namespace Raven.Utils {
     public class MathUtil {
-        //vars
+        // vars
         private static Random random = new Random();
 
-        //constructor
-        public MathUtil() {
+        // constructor
+        private MathUtil() {
 
         }
 
-        //public
+        // public
         public static double Random(double min, double max) {
             return random.NextDouble() * (max - min) + min;
         }
@@ -91,7 +91,7 @@ namespace Raven.Utils {
             return v;
         }
 
-        //private
+        // private
 
     }
 }

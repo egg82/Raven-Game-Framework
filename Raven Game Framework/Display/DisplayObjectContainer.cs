@@ -1,21 +1,21 @@
 ﻿using JoshuaKearney.Collections;
-using Raven.Core;
 using SFML.Graphics;
 using System;
+using System.Collections.Generic;
 
 namespace Raven.Display {
     public abstract class DisplayObjectContainer : DisplayObject {
-        //vars
-        private CopyOnWriteList<DisplayObject> painter = new CopyOnWriteList<DisplayObject>();
-        private ConcurrentSet<DisplayObject> children = new ConcurrentSet<DisplayObject>();
+        // vars
+        private readonly List<DisplayObject> painter = new List<DisplayObject>();
+        private readonly ConcurrentSet<DisplayObject> children = new ConcurrentSet<DisplayObject>();
         private readonly object childrenLock = new object();
 
-        //constructor
-        public DisplayObjectContainer() : base() {
+        // constructor
+        protected DisplayObjectContainer() : base() {
 
         }
 
-        //public
+        // public
         public bool AddChild(DisplayObject child) {
             if (child == null) {
                 throw new ArgumentNullException("child");
@@ -128,7 +128,7 @@ namespace Raven.Display {
             }
         }
 
-        //private
+        // private
         internal override void Draw(RenderTarget target, Transform parentTransform, Color parentColor) {
             base.Draw(target, parentTransform, parentColor);
 

@@ -1,6 +1,5 @@
 ﻿namespace Raven.Geom.Noise {
     public interface INoise {
-        //functions
         int Seed { get; set; }
         double Scale { get; set; }
 

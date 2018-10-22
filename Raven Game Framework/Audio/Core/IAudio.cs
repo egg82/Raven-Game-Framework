@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 
 namespace Raven.Audio.Core {
     public interface IAudio {
-        //functions
         event EventHandler<ExceptionEventArgs> Error;
 
         AudioType Type { get; }

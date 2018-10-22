@@ -1,25 +1,26 @@
 ﻿using Raven.Utils;
 using System;
+using System.Threading;
 
 namespace Raven.Geom.Noise {
     // Lifted a lot of this from https://github.com/WardBenjamin/SimplexNoise
     public class SimplexNoise : INoise {
-        //vars
+        // vars
         private double scale = 1.0d;
-        private volatile int seed = 0;
+        private int seed = 0;
 
-        private volatile byte[] perm = null;
+        private byte[] perm = null;
 
         private static readonly double F2 = 0.36602540378d;
         private static readonly double G2 = 0.2113248654d;
 
-        //constructor
+        // constructor
         public SimplexNoise(int seed = 0) {
-            this.seed = seed;
-            perm = SimplexUtil.GetPerm(seed);
+            Interlocked.Exchange(ref this.seed, seed);
+            Interlocked.Exchange(ref perm, PerlinUtil.GetPerm(seed));
         }
 
-        //public
+        // public
         public int Seed {
             get {
                 return seed;
@@ -29,8 +30,8 @@ namespace Raven.Geom.Noise {
                     return;
                 }
 
-                seed = value;
-                perm = SimplexUtil.GetPerm(seed);
+                Interlocked.Exchange(ref seed, value);
+                Interlocked.Exchange(ref perm, PerlinUtil.GetPerm(seed));
             }
         }
         public double Scale {
@@ -45,7 +46,7 @@ namespace Raven.Geom.Noise {
                     throw new NotFiniteNumberException(value);
                 }
                 if (value < 0.0d) {
-                    throw new Exception("value must be positive or zero.");
+                    throw new ArgumentOutOfRangeException("value");
                 }
 
                 scale = value;
@@ -76,7 +77,7 @@ namespace Raven.Geom.Noise {
             return (octave > 0) ? Fbm(x, y, octave) : Generate(x * scale, y * scale) * 128.0d + 128.0d;
         }
 
-        //private
+        // private
         private double Fbm(int x, uint octave) {
             double f = 0.0d;
             double w = 0.5d;

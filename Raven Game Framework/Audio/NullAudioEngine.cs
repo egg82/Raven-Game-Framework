@@ -8,18 +8,19 @@ using System.IO;
 
 namespace Raven.Audio {
     public class NullAudioEngine : AbstractAudioEngine {
-        //vars
+        // events
         public override event EventHandler<ExceptionEventArgs> Error;
 
-        private ConcurrentDictionary<string, NullAudio> audio = new ConcurrentDictionary<string, NullAudio>();
+        // vars
+        private readonly ConcurrentDictionary<string, NullAudio> audio = new ConcurrentDictionary<string, NullAudio>();
         private readonly object outLock = new object();
 
-        //constructor
+        // constructor
         public NullAudioEngine() : base() {
             
         }
 
-        //public
+        // public
         public override int OutputDevice {
             get {
                 return base.OutputDevice;
@@ -34,7 +35,7 @@ namespace Raven.Audio {
                     foreach (KeyValuePair<string, NullAudio> kvp in audio) {
                         long position = kvp.Value.PositionInBytes;
                         bool playing = kvp.Value.Playing;
-                        kvp.Value.Init(base.OutputDevice);
+                        kvp.Value.Device = base.OutputDevice;
                         kvp.Value.PositionInBytes = position;
                         if (playing) {
                             kvp.Value.Play(kvp.Value.Repeat);
@@ -59,8 +60,7 @@ namespace Raven.Audio {
                 throw new ArgumentNullException("name");
             }
 
-            NullAudio retVal = null;
-            audio.TryRemove(name, out retVal);
+            audio.TryRemove(name, out NullAudio retVal);
             return retVal;
         }
         public override IAudio Get(string name) {
@@ -68,8 +68,7 @@ namespace Raven.Audio {
                 throw new ArgumentNullException("name");
             }
 
-            NullAudio retVal = null;
-            audio.TryGetValue(name, out retVal);
+            audio.TryGetValue(name, out NullAudio retVal);
             return retVal;
         }
         public override int Count {
@@ -89,7 +88,7 @@ namespace Raven.Audio {
             }
         }
 
-        //private
+        // private
 
     }
 }

@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Test.Graphics {
     public class GraphicsState : State {
-        //vars
+        // vars
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private Raven.Display.Sprite ball = new Raven.Display.Sprite();
@@ -19,12 +19,12 @@ namespace Test.Graphics {
         private bool grow = false;
         private double value = 49.0d;
 
-        //constructor
+        // constructor
         public GraphicsState() : base() {
             
         }
 
-        //public
+        // public
         public override void Update(double deltaTime) {
             //log.Info("State update " + deltaTime);
 
@@ -48,7 +48,7 @@ namespace Test.Graphics {
             ball.X += 0.2d * (deltaTime / 2.0d);
             ball.Y += 0.2d * (deltaTime / 2.0d);
 
-            ImmutableList<DisplayObject> objects = Window.QuadTree.Query(inputEngine.Mouse.Point.X, inputEngine.Mouse.Point.Y);
+            ImmutableList<DisplayObject> objects = Window.QuadTree.Query(inputEngine.Mouse.X, inputEngine.Mouse.Y);
             foreach (DisplayObject obj in objects) {
                 log.Info("Object under cursor " + obj);
             }
@@ -56,7 +56,7 @@ namespace Test.Graphics {
             base.Update(deltaTime);
         }
 
-        //private
+        // private
         protected override void Enter() {
             log.Info("State entered");
 

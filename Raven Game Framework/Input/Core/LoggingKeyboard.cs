@@ -5,17 +5,17 @@ using System.Threading.Atomics;
 
 namespace Raven.Input.Core {
     public class LoggingKeyboard : Keyboard {
-        //vars
+        // vars
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        //constructor
+        // constructor
         internal LoggingKeyboard(AtomicBoolean usingController) : base(usingController) {
             log.Debug("Keyboard handler created.");
         }
 
-        //public
+        // public
 
-        //private
+        // private
         internal override void AddWindow(Display.Window window) {
             log.Debug("Adding window \"" + window.Title + "\"");
             base.AddWindow(window);

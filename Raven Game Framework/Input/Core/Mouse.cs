@@ -1,27 +1,28 @@
 ﻿using System;
-using System.Drawing;
+using System.Threading;
 using System.Threading.Atomics;
 using JoshuaKearney.Collections;
 using SFML.Window;
 
 namespace Raven.Input.Core {
     public class Mouse : AbstractMouse {
-        //vars
+        // events
         public override event EventHandler<MouseMoveEventArgs> MouseMove = null;
         public override event EventHandler<MouseWheelScrollEventArgs> MouseWheel = null;
         public override event EventHandler<MouseButtonEventArgs> MouseDown = null;
         public override event EventHandler<MouseButtonEventArgs> MouseUp = null;
 
-        private ConcurrentSet<Display.Window> windows = new ConcurrentSet<Display.Window>();
+        // vars
+        private readonly ConcurrentSet<Display.Window> windows = new ConcurrentSet<Display.Window>();
 
-        //constructor
+        // constructor
         internal Mouse(AtomicBoolean usingController) : base(usingController) {
 
         }
 
-        //public
+        // public
 
-        //private
+        // private
         internal override void AddWindow(Display.Window window) {
             if (!windows.Add(window)) {
                 return;
@@ -34,7 +35,7 @@ namespace Raven.Input.Core {
         }
         internal override void RemoveWindow(Display.Window window) {
             if (currentWindow == window) {
-                currentWindow = null;
+                Interlocked.Exchange(ref currentWindow, null);
             }
 
             if (!windows.Remove(window)) {
@@ -50,51 +51,51 @@ namespace Raven.Input.Core {
         protected virtual void OnMouseMove(object sender, MouseMoveEventArgs e) {
             usingController.Value = false;
 
-            point = new Point(e.X, e.Y);
-            currentWindow = (Display.Window) sender;
+            Interlocked.Exchange(ref xy, ((long) e.X << 32) | (uint) e.Y);
+            Interlocked.Exchange(ref currentWindow, (Display.Window) sender);
             MouseMove?.Invoke(sender, e);
         }
         protected virtual void OnMouseWheel(object sender, MouseWheelScrollEventArgs e) {
             usingController.Value = false;
 
-            wheelDelta = e.Delta;
-            currentWindow = (Display.Window) sender;
+            Interlocked.Exchange(ref wheelDelta, e.Delta);
+            Interlocked.Exchange(ref currentWindow, (Display.Window) sender);
             MouseWheel?.Invoke(sender, e);
         }
         protected virtual void OnMouseDown(object sender, MouseButtonEventArgs e) {
             usingController.Value = false;
 
             if (e.Button == SFML.Window.Mouse.Button.Left) {
-                left = true;
+                Interlocked.Exchange(ref left, 1);
             } else if (e.Button == SFML.Window.Mouse.Button.Middle) {
-                middle = true;
+                Interlocked.Exchange(ref middle, 1);
             } else if (e.Button == SFML.Window.Mouse.Button.Right) {
-                right = true;
+                Interlocked.Exchange(ref right, 1);
             } else if (e.Button == SFML.Window.Mouse.Button.XButton1) {
-                extra1 = true;
+                Interlocked.Exchange(ref extra1, 1);
             } else if (e.Button == SFML.Window.Mouse.Button.XButton2) {
-                extra2 = true;
+                Interlocked.Exchange(ref extra2, 1);
             }
 
-            currentWindow = (Display.Window) sender;
+            Interlocked.Exchange(ref currentWindow, (Display.Window) sender);
             MouseDown?.Invoke(sender, e);
         }
         protected virtual void OnMouseUp(object sender, MouseButtonEventArgs e) {
             usingController.Value = false;
 
             if (e.Button == SFML.Window.Mouse.Button.Left) {
-                left = false;
+                Interlocked.Exchange(ref left, 0);
             } else if (e.Button == SFML.Window.Mouse.Button.Middle) {
-                middle = false;
+                Interlocked.Exchange(ref middle, 0);
             } else if (e.Button == SFML.Window.Mouse.Button.Right) {
-                right = false;
+                Interlocked.Exchange(ref right, 0);
             } else if (e.Button == SFML.Window.Mouse.Button.XButton1) {
-                extra1 = false;
+                Interlocked.Exchange(ref extra1, 0);
             } else if (e.Button == SFML.Window.Mouse.Button.XButton2) {
-                extra2 = false;
+                Interlocked.Exchange(ref extra2, 0);
             }
 
-            currentWindow = (Display.Window) sender;
+            Interlocked.Exchange(ref currentWindow, (Display.Window) sender);
             MouseUp?.Invoke(sender, e);
         }
     }

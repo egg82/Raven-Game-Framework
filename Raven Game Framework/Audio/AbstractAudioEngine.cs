@@ -4,19 +4,21 @@ using Raven.Events;
 using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Threading;
 
 namespace Raven.Audio {
     public abstract class AbstractAudioEngine : IAudioEngine {
-        //vars
+        // events
         public abstract event EventHandler<ExceptionEventArgs> Error;
 
-        private volatile int outDevice = 0;
+        // vars
+        private int outDevice = 0;
         private readonly string[] outputDevices = new string[WaveOut.DeviceCount];
-        private volatile int inDevice = 0;
+        private int inDevice = 0;
         private readonly string[] inputDevices = new string[WaveIn.DeviceCount];
 
-        //constructor
-        public AbstractAudioEngine() {
+        // constructor
+        protected AbstractAudioEngine() {
             for (int i = 0; i < WaveIn.DeviceCount; i++) {
                 inputDevices[i] = WaveIn.GetCapabilities(i).ProductName;
             }
@@ -25,17 +27,17 @@ namespace Raven.Audio {
             }
         }
 
-        //public
+        // public
         public virtual int InputDevice {
             get {
                 return inDevice;
             }
             set {
                 if (value < 0 || value > WaveIn.DeviceCount) {
-                    throw new IndexOutOfRangeException();
+                    throw new ArgumentOutOfRangeException("value");
                 }
-                
-                inDevice = value;
+
+                Interlocked.Exchange(ref inDevice, value);
             }
         }
         public string InputDeviceName {
@@ -55,10 +57,10 @@ namespace Raven.Audio {
             }
             set {
                 if (value < 0 || value > WaveOut.DeviceCount) {
-                    throw new IndexOutOfRangeException();
+                    throw new ArgumentOutOfRangeException("value");
                 }
                 
-                outDevice = value;
+                Interlocked.Exchange(ref outDevice, value);
             }
         }
         public string OutputDeviceName {
@@ -80,7 +82,7 @@ namespace Raven.Audio {
         public abstract void StartRecording(ref Stream stream);
         public abstract void StopRecording(ref Stream stream);
 
-        //private
+        // private
 
     }
 }

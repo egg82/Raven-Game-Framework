@@ -2,14 +2,15 @@
 using Raven.Display;
 using Raven.Input.Core;
 using System;
+using System.Threading;
 
 namespace Raven.Input {
     public class InputEngine : AbstractInputEngine {
-        //vars
-        private ConcurrentSet<Window> windows = new ConcurrentSet<Window>();
-        private volatile Window currentWindow = null;
+        // vars
+        private readonly ConcurrentSet<Window> windows = new ConcurrentSet<Window>();
+        private Window currentWindow = null;
 
-        //constructor
+        // constructor
         public InputEngine() : base(new Mouse(usingController), new Keyboard(usingController), new Controllers(usingController)) {
 
         }
@@ -17,7 +18,7 @@ namespace Raven.Input {
 
         }
 
-        //public
+        // public
         public Window CurrentWindow {
             get {
                 return currentWindow;
@@ -36,7 +37,7 @@ namespace Raven.Input {
                 return;
             }
             if (currentWindow == null) {
-                currentWindow = window;
+                Interlocked.Exchange(ref currentWindow, window);
             }
 
             window.GainedFocus += OnFocused;
@@ -53,7 +54,7 @@ namespace Raven.Input {
                 return;
             }
             if (currentWindow == window) {
-                currentWindow = null;
+                Interlocked.Exchange(ref currentWindow, null);
             }
 
             window.GainedFocus -= OnFocused;
@@ -63,9 +64,9 @@ namespace Raven.Input {
             controllers.Update(currentWindow);
         }
 
-        //private
+        // private
         protected virtual void OnFocused(object sender, EventArgs e) {
-            currentWindow = (Window) sender;
+            Interlocked.Exchange(ref currentWindow, (Window) sender);
         }
     }
 }

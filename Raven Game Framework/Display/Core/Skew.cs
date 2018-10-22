@@ -3,45 +3,31 @@ using System;
 
 namespace Raven.Display.Core {
     public class Skew {
-        //vars
+        // events
         internal event EventHandler<EventArgs> Changed = null;
 
-        private PointD topLeft = new PointD();
-        private PointD topRight = new PointD();
-        private PointD bottomLeft = new PointD();
-        private PointD bottomRight = new PointD();
+        // vars
 
-        //constructor
+        // constructor
         public Skew() {
-            topLeft.Changed += OnChanged;
-            topRight.Changed += OnChanged;
-            bottomLeft.Changed += OnChanged;
-            bottomRight.Changed += OnChanged;
+            TopLeft = new PointD();
+            TopRight = new PointD();
+            BottomLeft = new PointD();
+            BottomRight = new PointD();
+
+            TopLeft.Changed += OnChanged;
+            TopRight.Changed += OnChanged;
+            BottomLeft.Changed += OnChanged;
+            BottomRight.Changed += OnChanged;
         }
 
-        //public
-        public PointD TopLeft {
-            get {
-                return topLeft;
-            }
-        }
-        public PointD TopRight {
-            get {
-                return topRight;
-            }
-        }
-        public PointD BottomLeft {
-            get {
-                return bottomLeft;
-            }
-        }
-        public PointD BottomRight {
-            get {
-                return bottomRight;
-            }
-        }
+        // public
+        public PointD TopLeft { get; private set; }
+        public PointD TopRight { get; private set; }
+        public PointD BottomLeft { get; private set; }
+        public PointD BottomRight { get; private set; }
 
-        //private
+        // private
         private void OnChanged(object sender, EventArgs e) {
             Changed?.Invoke(this, e);
         }

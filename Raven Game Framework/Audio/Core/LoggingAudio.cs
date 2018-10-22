@@ -5,18 +5,18 @@ using System.Reflection;
 
 namespace Raven.Audio.Core {
     public class LoggingAudio : Audio {
-        //vars
+        // vars
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly string name = null;
 
-        //constructor
+        // constructor
         internal LoggingAudio(string name, AudioType type, AudioFormat format, byte[] data, int device) : base(type, format, data, device) {
             log.Debug("Created new audio \"" + name + "\" with type=" + type + ", format=" + format + ", length=" + data.LongLength);
             this.name = name;
         }
 
-        //public
+        // public
         public override double Volume {
             get {
                 return base.Volume;
@@ -68,11 +68,7 @@ namespace Raven.Audio.Core {
             }
         }
 
-        //private
-        internal override void Init(int device) {
-            log.Debug("(Re)initialized audio \"" + name + "\" with device=" + device);
-            base.Init(device);
-        }
+        // private
         protected override void OnPlaybackComplete(object sender, StoppedEventArgs e) {
             if (e.Exception != null) {
                 log.Error("Audio \"" + name + "\" threw exception.", e.Exception);

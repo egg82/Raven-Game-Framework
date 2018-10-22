@@ -1,21 +1,22 @@
 ﻿using Raven.Utils;
 using System;
+using System.Threading;
 
 namespace Raven.Geom.Noise {
     public class PerlinNoise : INoise {
-        //vars
+        // vars
         private double scale = 1.0d;
-        private volatile int seed = 0;
+        private int seed = 0;
 
-        private volatile byte[] perm = null;
+        private byte[] perm = null;
 
-        //constructor
+        // constructor
         public PerlinNoise(int seed = 0) {
-            this.seed = seed;
-            perm = PerlinUtil.GetPerm(seed);
+            Interlocked.Exchange(ref this.seed, seed);
+            Interlocked.Exchange(ref perm, PerlinUtil.GetPerm(seed));
         }
 
-        //public
+        // public
         public int Seed {
             get {
                 return seed;
@@ -25,8 +26,8 @@ namespace Raven.Geom.Noise {
                     return;
                 }
 
-                seed = value;
-                perm = PerlinUtil.GetPerm(seed);
+                Interlocked.Exchange(ref seed, value);
+                Interlocked.Exchange(ref perm, PerlinUtil.GetPerm(seed));
             }
         }
         public double Scale {
@@ -41,7 +42,7 @@ namespace Raven.Geom.Noise {
                     throw new NotFiniteNumberException(value);
                 }
                 if (value < 0.0d) {
-                    throw new Exception("value must be positive or zero.");
+                    throw new ArgumentOutOfRangeException("value");
                 }
 
                 scale = value;
@@ -72,7 +73,7 @@ namespace Raven.Geom.Noise {
             return (octave > 0) ? Fbm(x, y, octave) : Generate(x * scale, y * scale);
         }
 
-        //private
+        // private
         private double Fbm(int x, uint octave) {
             double f = 0.0d;
             double w = 0.5d;

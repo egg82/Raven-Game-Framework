@@ -3,38 +3,22 @@ using System;
 
 namespace Raven.Input.Events {
     public class TriggerEventArgs : EventArgs {
-        //vars
+        // vars
         public static readonly new TriggerEventArgs Empty = new TriggerEventArgs(-1, XboxSide.None, 0.0d);
 
-        private readonly int controller = -1;
-        private readonly XboxSide side = XboxSide.None;
-        private readonly double pressure = 0.0d;
-
-        //constructor
+        // constructor
         public TriggerEventArgs(int controller, XboxSide side, double pressure) {
-            this.controller = controller;
-            this.side = side;
-            this.pressure = pressure;
+            Controller = controller;
+            Side = side;
+            Pressure = pressure;
         }
 
-        //public
-        public int Controller {
-            get {
-                return controller;
-            }
-        }
-        public XboxSide Side {
-            get {
-                return side;
-            }
-        }
-        public double Pressure {
-            get {
-                return pressure;
-            }
-        }
+        // public
+        public int Controller { get; private set; }
+        public XboxSide Side { get; private set; }
+        public double Pressure { get; private set; }
 
-        //private
+        // private
 
     }
 }

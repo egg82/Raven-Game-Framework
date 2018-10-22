@@ -7,31 +7,31 @@ using System.Collections.Immutable;
 
 namespace Raven.Geom.Tree {
     public class QuadTree<T> : ICollection<T> where T : QuadNode {
-        //vars
-        private volatile Boolean boundsChanged = false;
+        // vars
+        private bool boundsChanged = false;
+        private double width = 0.0d;
+        private double height = 0.0d;
         private QuadLeaf<T> root = null;
-        private double width = 1.0d;
-        private double height = 1.0d;
         private readonly object rootLock = new object();
 
-        private ConcurrentSet<T> addedSet = new ConcurrentSet<T>();
-        private ConcurrentSet<T> removedSet = new ConcurrentSet<T>();
-        private ConcurrentSet<T> changedSet = new ConcurrentSet<T>();
-        private ConcurrentSet<T> objects = new ConcurrentSet<T>();
+        private readonly ConcurrentSet<T> addedSet = new ConcurrentSet<T>();
+        private readonly ConcurrentSet<T> removedSet = new ConcurrentSet<T>();
+        private readonly ConcurrentSet<T> changedSet = new ConcurrentSet<T>();
+        private readonly ConcurrentSet<T> objects = new ConcurrentSet<T>();
 
-        //constructor
+        // constructor
         public QuadTree(double width, double height) {
             if (double.IsNaN(width) || double.IsInfinity(width)) {
                 throw new NotFiniteNumberException(width);
             }
             if (width <= 0.0d) {
-                throw new Exception("width must be positive and non-zero.");
+                throw new ArgumentOutOfRangeException("width");
             }
             if (double.IsNaN(height) || double.IsInfinity(height)) {
                 throw new NotFiniteNumberException(width);
             }
             if (height <= 0.0d) {
-                throw new Exception("height must be positive and non-zero.");
+                throw new ArgumentOutOfRangeException("height");
             }
 
             root = new QuadLeaf<T>(0.0d, 0.0d, width, height);
@@ -39,34 +39,34 @@ namespace Raven.Geom.Tree {
             this.height = height;
         }
 
-        //public
-        public void Add(T node) {
-            if (node == null) {
-                throw new ArgumentNullException("node");
+        // public
+        public void Add(T item) {
+            if (item == null) {
+                throw new ArgumentNullException("item");
             }
 
-            if (!objects.Add(node)) {
+            if (!objects.Add(item)) {
                 return;
             }
 
-            removedSet.Remove(node);
-            addedSet.Add(node);
-            changedSet.Add(node);
-            node.BoundsChanged += OnBoundsChanged;
+            removedSet.Remove(item);
+            addedSet.Add(item);
+            changedSet.Add(item);
+            item.BoundsChanged += OnBoundsChanged;
         }
-        public bool Remove(T node) {
-            if (node == null) {
-                throw new ArgumentNullException("node");
+        public bool Remove(T item) {
+            if (item == null) {
+                throw new ArgumentNullException("item");
             }
 
-            if (!objects.Remove(node)) {
+            if (!objects.Remove(item)) {
                 return false;
             }
-            
-            node.BoundsChanged -= OnBoundsChanged;
-            changedSet.Remove(node);
-            addedSet.Remove(node);
-            removedSet.Add(node);
+
+            item.BoundsChanged -= OnBoundsChanged;
+            changedSet.Remove(item);
+            addedSet.Remove(item);
+            removedSet.Add(item);
             return true;
         }
         public void Clear() {
@@ -74,8 +74,8 @@ namespace Raven.Geom.Tree {
                 Remove(node);
             }
         }
-        public bool Contains(T node) {
-            return objects.Contains(node);
+        public bool Contains(T item) {
+            return objects.Contains(item);
         }
         public int Count {
             get {
@@ -99,6 +99,9 @@ namespace Raven.Geom.Tree {
 
         public double Width {
             get {
+                lock (rootLock) {
+                    ReculculateNodeList();
+                }
                 return root.Width;
             }
             set {
@@ -106,7 +109,7 @@ namespace Raven.Geom.Tree {
                     throw new NotFiniteNumberException(value);
                 }
                 if (value <= 0.0d) {
-                    throw new Exception("value must be positive and non-zero.");
+                    throw new ArgumentOutOfRangeException("value");
                 }
 
                 lock (rootLock) {
@@ -121,6 +124,9 @@ namespace Raven.Geom.Tree {
         }
         public double Height {
             get {
+                lock (rootLock) {
+                    ReculculateNodeList();
+                }
                 return root.Height;
             }
             set {
@@ -128,7 +134,7 @@ namespace Raven.Geom.Tree {
                     throw new NotFiniteNumberException(value);
                 }
                 if (value <= 0.0d) {
-                    throw new Exception("value must be positive and non-zero.");
+                    throw new ArgumentOutOfRangeException("value");
                 }
 
                 lock (rootLock) {
@@ -156,36 +162,41 @@ namespace Raven.Geom.Tree {
                 throw new NotFiniteNumberException(height);
             }
 
+            ImmutableList<T> retVal = null;
             lock (rootLock) {
-                if (boundsChanged) {
-                    root = new QuadLeaf<T>(0.0d, 0.0d, width, height);
-                    removedSet.Clear();
-
-                    foreach (T node in objects) {
-                        changedSet.Remove(node);
-                        addedSet.Remove(node);
-                        root.Add(node);
-                    }
-                } else {
-                    foreach (T node in addedSet) {
-                        root.Add(node);
-                        addedSet.Remove(node);
-                    }
-                    foreach (T node in changedSet) {
-                        root.Move(node);
-                        changedSet.Remove(node);
-                    }
-                    foreach (T node in removedSet) {
-                        root.Remove(node);
-                        removedSet.Remove(node);
-                    }
-                }
-
-                return ImmutableList.ToImmutableList(root.Query(x, y, (width < 0.0d) ? 0.0d : width, (height < 0.0d) ? 0.0d : height));
+                ReculculateNodeList();
+                retVal = ImmutableList.ToImmutableList(root.Query(x, y, (width < 0.0d) ? 0.0d : width, (height < 0.0d) ? 0.0d : height));
             }
+            return retVal;
         }
 
-        //private
+        // private
+        private void ReculculateNodeList() {
+            if (boundsChanged) {
+                root = new QuadLeaf<T>(0.0d, 0.0d, width, height);
+                removedSet.Clear();
+
+                foreach (T node in objects) {
+                    changedSet.Remove(node);
+                    addedSet.Remove(node);
+                    root.Add(node);
+                }
+            } else {
+                foreach (T node in addedSet) {
+                    root.Add(node);
+                    addedSet.Remove(node);
+                }
+                foreach (T node in changedSet) {
+                    root.Move(node);
+                    changedSet.Remove(node);
+                }
+                foreach (T node in removedSet) {
+                    root.Remove(node);
+                    removedSet.Remove(node);
+                }
+            }
+        }
+        
         private void OnBoundsChanged(object sender, BoundsEventArgs e) {
             changedSet.Add((T) sender);
         }

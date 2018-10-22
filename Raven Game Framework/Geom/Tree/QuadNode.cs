@@ -4,19 +4,20 @@ using System;
 
 namespace Raven.Geom.Tree {
     public abstract class QuadNode {
-        //vars
+        // events
         internal event EventHandler<BoundsEventArgs> BoundsChanged = null;
 
+        // vars
         private double x = 0.0d;
         private double y = 0.0d;
         private double width = 1.0d;
         private double height = 1.0d;
 
-        //constructor
-        public QuadNode() {
+        // constructor
+        protected QuadNode() {
 
         }
-        public QuadNode(PointD point, SizeD size) {
+        protected QuadNode(PointD point, SizeD size) {
             if (point == null) {
                 throw new ArgumentNullException("point");
             }
@@ -29,14 +30,14 @@ namespace Raven.Geom.Tree {
             width = MathUtil.Clamp(double.MinValue, double.MaxValue, size.Width);
             height = MathUtil.Clamp(double.MinValue, double.MaxValue, size.Height);
         }
-        public QuadNode(double x, double y, double width, double height) {
+        protected QuadNode(double x, double y, double width, double height) {
             this.x = MathUtil.Clamp(double.MinValue, double.MaxValue, x);
             this.y = MathUtil.Clamp(double.MinValue, double.MaxValue, y);
             this.width = MathUtil.Clamp(double.MinValue, double.MaxValue, width);
             this.height = MathUtil.Clamp(double.MinValue, double.MaxValue, height);
         }
 
-        //public
+        // public
         public virtual double X {
             get {
                 return x;
@@ -78,7 +79,7 @@ namespace Raven.Geom.Tree {
                     return;
                 }
                 if (value <= 0.0d) {
-                    throw new Exception("value must be positive and non-zero.");
+                    throw new ArgumentOutOfRangeException("value");
                 }
                 if (double.IsNaN(value) || double.IsInfinity(value)) {
                     throw new NotFiniteNumberException(value);
@@ -97,7 +98,7 @@ namespace Raven.Geom.Tree {
                     return;
                 }
                 if (value <= 0.0d) {
-                    throw new Exception("value must be positive and non-zero.");
+                    throw new ArgumentOutOfRangeException("value");
                 }
                 if (double.IsNaN(value) || double.IsInfinity(value)) {
                     throw new NotFiniteNumberException(value);
@@ -108,7 +109,7 @@ namespace Raven.Geom.Tree {
             }
         }
 
-        //private
+        // private
 
     }
 }

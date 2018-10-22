@@ -1,24 +1,26 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Atomics;
 using JoshuaKearney.Collections;
 using SFML.Window;
 
 namespace Raven.Input.Core {
     public class Keyboard : AbstractKeyboard {
-        //vars
+        // events
         public override event EventHandler<KeyEventArgs> KeyUp = null;
         public override event EventHandler<KeyEventArgs> KeyDown = null;
 
-        private ConcurrentSet<Display.Window> windows = new ConcurrentSet<Display.Window>();
+        // vars
+        private readonly ConcurrentSet<Display.Window> windows = new ConcurrentSet<Display.Window>();
 
-        //constructor
+        // constructor
         internal Keyboard(AtomicBoolean usingController) : base(usingController) {
 
         }
 
-        //public
+        // public
 
-        //private
+        // private
         internal override void AddWindow(Display.Window window) {
             if (!windows.Add(window)) {
                 return;
@@ -44,10 +46,10 @@ namespace Raven.Input.Core {
                 return;
             }
 
-            if (keys[key]) {
+            if (keys[key] != 0) {
                 return;
             }
-            keys[key] = true;
+            Interlocked.Exchange(ref keys[key], 1);
 
             KeyDown?.Invoke(sender, e);
         }
@@ -59,10 +61,10 @@ namespace Raven.Input.Core {
                 return;
             }
 
-            if (!keys[key]) {
+            if (keys[key] == 0) {
                 return;
             }
-            keys[key] = false;
+            Interlocked.Exchange(ref keys[key], 0);
 
             KeyUp?.Invoke(sender, e);
         }

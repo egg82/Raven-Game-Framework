@@ -5,20 +5,22 @@ using Raven.Input.Events;
 using Raven.Utils;
 using SharpDX.XInput;
 using System;
+using System.Threading;
 using System.Threading.Atomics;
 
 namespace Raven.Input.Core {
     public class Controllers : AbstractControllers {
-        //vars
+        // events
         public override event EventHandler<ButtonEventArgs> ButtonDown = null;
         public override event EventHandler<ButtonEventArgs> ButtonUp = null;
         public override event EventHandler<StickEventArgs> StickMoved = null;
         public override event EventHandler<TriggerEventArgs> TriggerPressed = null;
 
-        private Controller[] controllers = new Controller[4];
-        private Gamepad[] states = new Gamepad[4];
-        private int[] packetNumbers = new int[4];
-        private volatile int connectedControllers = 0;
+        // vars
+        private readonly Controller[] controllers = new Controller[4];
+        private readonly Gamepad[] states = new Gamepad[4];
+        private readonly int[] packetNumbers = new int[4];
+        private int connectedControllers = 0;
         private readonly object updateLock = new object();
 
         private double stickDeadzone = 0.05d;
@@ -32,7 +34,7 @@ namespace Raven.Input.Core {
         private readonly short maxAnglePos = 8192;
         private readonly short maxAngleNeg = -8193;
 
-        //constructor
+        // constructor
         internal Controllers(AtomicBoolean usingController) : base(usingController) {
             dzPos = (short) (stickDeadzone * 32767.0d);
             dzNeg = (short) (stickDeadzone * -32768.0d);
@@ -45,18 +47,18 @@ namespace Raven.Input.Core {
             
             for (int i = 0; i < controllers.Length; i++) {
                 if (controllers[i].IsConnected) {
-                    connectedControllers++;
+                    Interlocked.Increment(ref connectedControllers);
                     SharpDX.XInput.State state = controllers[i].GetState();
                     states[i] = state.Gamepad;
-                    packetNumbers[i] = state.PacketNumber;
+                    Interlocked.Exchange(ref packetNumbers[i], state.PacketNumber);
                 } else {
                     states[i] = default(Gamepad);
-                    packetNumbers[i] = int.MinValue;
+                    Interlocked.Exchange(ref packetNumbers[i], int.MinValue);
                 }
             }
         }
 
-        //public
+        // public
         public override double StickDeadzone {
             get {
                 return stickDeadzone;
@@ -188,71 +190,71 @@ namespace Raven.Input.Core {
 
             foreach (int b in codes) {
                 if (b == (int) XboxButtonCode.A && (states[controller].Buttons & GamepadButtonFlags.A) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.B && (states[controller].Buttons & GamepadButtonFlags.B) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.Y && (states[controller].Buttons & GamepadButtonFlags.Y) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.X && (states[controller].Buttons & GamepadButtonFlags.X) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.LeftBumper && (states[controller].Buttons & GamepadButtonFlags.LeftShoulder) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.RightBumper && (states[controller].Buttons & GamepadButtonFlags.RightShoulder) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.LeftStick && (states[controller].Buttons & GamepadButtonFlags.LeftThumb) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.RightStick && (states[controller].Buttons & GamepadButtonFlags.RightThumb) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.Start && (states[controller].Buttons & GamepadButtonFlags.Start) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.Back && (states[controller].Buttons & GamepadButtonFlags.Back) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.Up && (states[controller].Buttons & GamepadButtonFlags.DPadUp) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.Down && (states[controller].Buttons & GamepadButtonFlags.DPadDown) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.Left && (states[controller].Buttons & GamepadButtonFlags.DPadLeft) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else if (b == (int) XboxButtonCode.Right && (states[controller].Buttons & GamepadButtonFlags.DPadRight) != GamepadButtonFlags.None) {
-                    continue;
+                    // Do nothing
                 } else {
                     if (b == (int) XboxStickCode.LeftN && states[controller].LeftThumbY >= dzPos && Math.Abs(states[controller].LeftThumbX) < maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.LeftE && states[controller].LeftThumbX >= dzPos && Math.Abs(states[controller].LeftThumbY) < maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.LeftS && states[controller].LeftThumbY <= dzNeg && Math.Abs(states[controller].LeftThumbX) < maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.LeftW && states[controller].LeftThumbX <= dzNeg && Math.Abs(states[controller].LeftThumbY) < maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.LeftNE && states[controller].LeftThumbY >= dzPos && states[controller].LeftThumbX >= maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.LeftNW && states[controller].LeftThumbY >= dzPos && states[controller].LeftThumbX <= maxAngleNeg) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.LeftSE && states[controller].LeftThumbY <= dzNeg && states[controller].LeftThumbX >= maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.LeftSW && states[controller].LeftThumbY <= dzNeg && states[controller].LeftThumbX <= maxAngleNeg) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.RightN && states[controller].RightThumbY >= dzPos && Math.Abs(states[controller].RightThumbX) < maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.RightE && states[controller].RightThumbX >= dzPos && Math.Abs(states[controller].RightThumbY) < maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.RightS && states[controller].RightThumbY <= dzNeg && Math.Abs(states[controller].RightThumbX) < maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.RightW && states[controller].RightThumbX <= dzNeg && Math.Abs(states[controller].RightThumbY) < maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.RightNE && states[controller].RightThumbY >= dzPos && states[controller].RightThumbX >= maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.RightNW && states[controller].RightThumbY >= dzPos && states[controller].RightThumbX <= maxAngleNeg) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.RightSE && states[controller].RightThumbY <= dzNeg && states[controller].RightThumbX >= maxAnglePos) {
-                        continue;
+                        // Do nothing
                     } else if (b == (int) XboxStickCode.RightSW && states[controller].RightThumbY <= dzNeg && states[controller].RightThumbX <= maxAngleNeg) {
-                        continue;
+                        // Do nothing
                     } else {
                         if (b == (int) XboxTriggerCode.Left && states[controller].LeftTrigger > dzTrig) {
-                            continue;
+                            // Do nothing
                         } else if (b == (int) XboxTriggerCode.Right && states[controller].RightTrigger > dzTrig) {
-                            continue;
+                            // Do nothing
                         } else {
                             return false;
                         }
@@ -272,7 +274,12 @@ namespace Raven.Input.Core {
             if (side == XboxSide.None || controller < 0 || controller >= controllers.Length || !controllers[controller].IsConnected) {
                 return new PointD();
             }
-            return (side == XboxSide.Left) ? new PointD((states[controller].LeftThumbX < 0) ? states[controller].LeftThumbX / 32768.0d : states[controller].LeftThumbX / 32767.0d, (states[controller].LeftThumbY < 0) ? states[controller].LeftThumbY / 32768.0d : states[controller].LeftThumbY / 32767.0d) : new PointD((states[controller].RightThumbX < 0) ? states[controller].RightThumbX / 32768.0d : states[controller].RightThumbX / 32767.0d, (states[controller].RightThumbY < 0) ? states[controller].RightThumbY / 32768.0d : states[controller].RightThumbY / 32767.0d);
+
+            if (side == XboxSide.Left) {
+                return new PointD((states[controller].LeftThumbX < 0) ? states[controller].LeftThumbX / 32768.0d : states[controller].LeftThumbX / 32767.0d, (states[controller].LeftThumbY < 0) ? states[controller].LeftThumbY / 32768.0d : states[controller].LeftThumbY / 32767.0d);
+            }
+
+            return new PointD((states[controller].RightThumbX < 0) ? states[controller].RightThumbX / 32768.0d : states[controller].RightThumbX / 32767.0d, (states[controller].RightThumbY < 0) ? states[controller].RightThumbY / 32768.0d : states[controller].RightThumbY / 32767.0d);
         }
         public override void Vibrate(int controller, double leftIntensity, double rightIntensity) {
             if (controller < 0 || controller >= controllers.Length || !controllers[controller].IsConnected) {
@@ -285,7 +292,7 @@ namespace Raven.Input.Core {
             });
         }
 
-        //private
+        // private
         internal override void Update(Window window) {
             if (!Supported) {
                 usingController.Value = false;
@@ -309,7 +316,7 @@ namespace Raven.Input.Core {
                 if (state.PacketNumber == packetNumbers[i]) {
                     return;
                 }
-                packetNumbers[i] = state.PacketNumber;
+                Interlocked.Exchange(ref packetNumbers[i], state.PacketNumber);
 
                 Gamepad pad = state.Gamepad;
 
@@ -478,7 +485,7 @@ namespace Raven.Input.Core {
 
                 states[i] = pad;
             }
-            connectedControllers = numControllers;
+            Interlocked.Exchange(ref connectedControllers, numControllers);
         }
     }
 }

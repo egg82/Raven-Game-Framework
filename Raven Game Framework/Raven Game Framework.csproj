@@ -55,8 +55,8 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BouncyCastle.Crypto, Version=1.8.2.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
-      <HintPath>..\packages\BouncyCastle.1.8.2\lib\BouncyCastle.Crypto.dll</HintPath>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.3.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.3.1\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="ConcurrentSet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ConcurrentSet.1.0.0\lib\net45\ConcurrentSet.dll</HintPath>
@@ -82,11 +82,11 @@
     <Reference Include="SFML.Portable, Version=2.0.6807.40116, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SFML-Portable-2.4.1.5.1\lib\SFML.Portable.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.4.1.0\lib\net45\SharpDX.dll</HintPath>
+    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.XInput, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.XInput.4.1.0\lib\net45\SharpDX.XInput.dll</HintPath>
+    <Reference Include="SharpDX.XInput, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.XInput.4.2.0\lib\net45\SharpDX.XInput.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -111,6 +111,8 @@
     <Compile Include="Audio\AbstractAudioEngine.cs" />
     <Compile Include="Audio\Core\AbstractAudio.cs" />
     <Compile Include="Audio\Core\IAudio.cs" />
+    <Compile Include="Audio\Exceptions\AudioException.cs" />
+    <Compile Include="Audio\Exceptions\PanningException.cs" />
     <Compile Include="Audio\NullAudioEngine.cs" />
     <Compile Include="Audio\AudioEngine.cs" />
     <Compile Include="Audio\IAudioEngine.cs" />
@@ -119,7 +121,6 @@
     <Compile Include="Audio\Core\NullAudio.cs" />
     <Compile Include="Audio\Core\LoggingAudio.cs" />
     <Compile Include="Core\AffinityThread.cs" />
-    <Compile Include="Core\CopyOnWriteList.cs" />
     <Compile Include="Display\Core\Graphics.cs" />
     <Compile Include="Geom\Noise\INoise.cs" />
     <Compile Include="Geom\Noise\PerlinNoise.cs" />

@@ -3,29 +3,18 @@ using System;
 
 namespace Raven.Input.Events {
     public class ButtonEventArgs : EventArgs {
-        //vars
+        // vars
         public static readonly new ButtonEventArgs Empty = new ButtonEventArgs(-1, XboxButtonCode.None);
 
-        private readonly int controller = -1;
-        private readonly XboxButtonCode code = XboxButtonCode.None;
-
-        //constructor
+        // constructor
         public ButtonEventArgs(int controller, XboxButtonCode code) {
-            this.controller = controller;
-            this.code = code;
+            Controller = controller;
+            Code = code;
         }
 
-        //public
-        public int Controller {
-            get {
-                return controller;
-            }
-        }
-        public XboxButtonCode Code {
-            get {
-                return code;
-            }
-        }
+        // public
+        public int Controller { get; private set; }
+        public XboxButtonCode Code { get; private set; }
 
         //private
 

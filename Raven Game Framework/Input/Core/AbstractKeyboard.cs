@@ -5,29 +5,30 @@ using static SFML.Window.Keyboard;
 
 namespace Raven.Input.Core {
     public abstract class AbstractKeyboard : IKeyboard {
-        //vars
+        // events
         public abstract event EventHandler<KeyEventArgs> KeyUp;
         public abstract event EventHandler<KeyEventArgs> KeyDown;
 
-        protected volatile bool[] keys = new bool[256];
+        // vars
+        protected int[] keys = new int[256];
         protected AtomicBoolean usingController = null;
 
-        //constructor
-        internal AbstractKeyboard(AtomicBoolean usingController) {
+        // constructor
+        protected AbstractKeyboard(AtomicBoolean usingController) {
             this.usingController = usingController;
         }
 
-        //public
+        // public
         public virtual bool IsAnyKeyDown(params Key[] keyCodes) {
             if (keyCodes == null || keyCodes.LongLength == 0L) {
                 return true;
             }
 
-            foreach (int k in keyCodes) {
-                if (k < 0 || k >= keys.Length) {
+            foreach (Key k in keyCodes) {
+                if (k < 0 || (int) k >= keys.Length) {
                     continue;
                 }
-                if (keys[k]) {
+                if (keys[(int) k] != 0) {
                     return true;
                 }
             }
@@ -39,8 +40,8 @@ namespace Raven.Input.Core {
                 return true;
             }
 
-            foreach (int k in keyCodes) {
-                if (k < 0 || k >= keys.Length || !keys[k]) {
+            foreach (Key k in keyCodes) {
+                if (k < 0 || (int) k >= keys.Length || keys[(int) k] == 0) {
                     return false;
                 }
             }
@@ -48,7 +49,7 @@ namespace Raven.Input.Core {
             return true;
         }
 
-        //private
+        // private
         internal abstract void AddWindow(Display.Window window);
         internal abstract void RemoveWindow(Display.Window window);
     }

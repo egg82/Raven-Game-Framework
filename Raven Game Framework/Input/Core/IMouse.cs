@@ -4,7 +4,6 @@ using System.Drawing;
 
 namespace Raven.Input.Core {
     public interface IMouse {
-        //functions
         event EventHandler<MouseMoveEventArgs> MouseMove;
         event EventHandler<MouseWheelScrollEventArgs> MouseWheel;
         event EventHandler<MouseButtonEventArgs> MouseDown;
@@ -12,7 +11,8 @@ namespace Raven.Input.Core {
 
         Display.Window CurrentWindow { get; }
         double WheelDelta { get; }
-        Point Point { get; }
+        int X { get; }
+        int Y { get; }
 
         bool LeftDown { get; }
         bool MiddleDown { get; }

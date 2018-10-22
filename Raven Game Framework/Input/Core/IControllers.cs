@@ -5,7 +5,6 @@ using System;
 
 namespace Raven.Input.Core {
     public interface IControllers {
-        //functions
         event EventHandler<ButtonEventArgs> ButtonDown;
         event EventHandler<ButtonEventArgs> ButtonUp;
         event EventHandler<StickEventArgs> StickMoved;

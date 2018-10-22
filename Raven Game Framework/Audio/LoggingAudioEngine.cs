@@ -7,15 +7,15 @@ using System.Reflection;
 
 namespace Raven.Audio {
     public class LoggingAudioEngine : AudioEngine {
-        //vars
+        // vars
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        //constructor
+        // constructor
         public LoggingAudioEngine() : base() {
             log.Debug("Audio engine enabled.");
         }
 
-        //public
+        // public
         public override int InputDevice {
             get {
                 return base.InputDevice;
@@ -53,7 +53,7 @@ namespace Raven.Audio {
             base.StopRecording(ref stream);
         }
 
-        //private
+        // private
         protected override void OnError(object sender, ExceptionEventArgs e) {
             log.Error("Bubbling exception.", e.Exception);
             base.OnError(sender, e);

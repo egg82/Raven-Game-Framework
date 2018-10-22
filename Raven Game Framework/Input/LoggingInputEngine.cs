@@ -5,15 +5,15 @@ using System.Reflection;
 
 namespace Raven.Input {
     public class LoggingInputEngine : InputEngine {
-        //vars
+        // vars
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        //constructor
+        // constructor
         public LoggingInputEngine() : base(new Core.LoggingMouse(usingController), new Core.LoggingKeyboard(usingController), new Core.LoggingControllers(usingController)) {
             log.Debug("Input engine enabled.");
         }
 
-        //public
+        // public
         public override void AddWindow(Window window) {
             log.Debug("Adding window \"" + window.Title + "\"");
             base.AddWindow(window);
@@ -23,7 +23,7 @@ namespace Raven.Input {
             base.RemoveWindow(window);
         }
 
-        //private
+        // private
         protected override void OnFocused(object sender, EventArgs e) {
             log.Debug("Window took focus \"" + ((Window) sender).Title + "\"");
         }

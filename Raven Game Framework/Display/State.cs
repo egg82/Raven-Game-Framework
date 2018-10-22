@@ -1,38 +1,40 @@
-﻿namespace Raven.Display {
-    public abstract class State : DisplayObjectContainer {
-        //vars
-        private volatile bool alive = false;
-        private volatile bool active = true;
+﻿using System.Threading;
 
-        //constructor
-        public State() {
+namespace Raven.Display {
+    public abstract class State : DisplayObjectContainer {
+        // vars
+        private int alive = 0;
+        private int active = 1;
+
+        // constructor
+        protected State() : base() {
 
         }
 
-        //public
+        // public
         public Window Window { get; internal set; }
         internal bool Alive {
             get {
-                return alive;
+                return alive != 0;
             }
         }
         public bool Active {
             get {
-                return active;
+                return active != 0;
             }
             set {
-                active = value;
+                Interlocked.Exchange(ref active, value ? 1 : 0);
             }
         }
 
-        //private
+        // private
         internal void OnEnter() {
             Enter();
-            alive = true;
+            Interlocked.Exchange(ref alive, 1);
         }
         internal void OnExit() {
             Exit();
-            alive = false;
+            Interlocked.Exchange(ref alive, 0);
         }
         
         protected abstract void Enter();

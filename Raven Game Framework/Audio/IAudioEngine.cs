@@ -6,7 +6,6 @@ using System.IO;
 
 namespace Raven.Audio {
     public interface IAudioEngine {
-        //functions
         event EventHandler<ExceptionEventArgs> Error;
         
         int InputDevice { get; set; }

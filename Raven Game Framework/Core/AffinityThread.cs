@@ -8,21 +8,22 @@ using System.Threading.Atomics;
 
 namespace Raven.Core {
     public class AffinityThread {
-        //vars
+        // externs
         [DllImport("kernel32.dll")]
         private static extern int GetCurrentThreadId();
 
+        // vars
         private int core = 0;
         private Thread thread = null;
         private readonly object threadLock = new object();
 
-        private ThreadStart start = null;
+        private readonly ThreadStart start = null;
         private ThreadPriority priority = ThreadPriority.Normal;
         private readonly int maxStackSize = 0;
 
-        private AtomicBoolean running = new AtomicBoolean(false);
+        private readonly AtomicBoolean running = new AtomicBoolean(false);
 
-        //constructor
+        // constructor
         public AffinityThread(ThreadStart start, ThreadPriority priority = ThreadPriority.Normal, int maxStackSize = 0) {
             if (start == null) {
                 throw new ArgumentNullException("start");
@@ -33,7 +34,7 @@ namespace Raven.Core {
             this.maxStackSize = maxStackSize;
         }
 
-        //public
+        // public
         public int ProcessorCore {
             get {
                 return core;
@@ -81,7 +82,7 @@ namespace Raven.Core {
             }
         }
 
-        //private
+        // private
         private void Init() {
             lock (threadLock) {
                 bool previouslyRunning = running.CompareExchange(false, true);

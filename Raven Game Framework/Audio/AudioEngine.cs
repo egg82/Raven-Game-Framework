@@ -6,29 +6,29 @@ using Raven.Overrides;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 
 namespace Raven.Audio {
     public class AudioEngine : AbstractAudioEngine {
-        //vars
+        // events
         public override event EventHandler<ExceptionEventArgs> Error = null;
 
-        private ConcurrentDictionary<string, Audio.Core.Audio> audio = new ConcurrentDictionary<string, Core.Audio>();
+        // vars
+        private readonly ConcurrentDictionary<string, Core.Audio> audio = new ConcurrentDictionary<string, Core.Audio>();
         private readonly object outLock = new object();
 
-        private WaveInEvent waveIn = new WaveInEvent();
+        private readonly WaveInEvent waveIn = new WaveInEvent();
         protected ConcurrentSet<Stream> inStreams = new ConcurrentSet<Stream>();
         private readonly object inLock = new object();
 
-        //constructor
+        // constructor
         public AudioEngine() : base() {
             waveIn.RecordingStopped += OnRecordingComplete;
             waveIn.DataAvailable += OnInputData;
             waveIn.StartRecording();
         }
 
-        //public
+        // public
         public override int InputDevice {
             get {
                 return base.InputDevice;
@@ -60,7 +60,7 @@ namespace Raven.Audio {
                     foreach (KeyValuePair<string, Core.Audio> kvp in audio) {
                         long position = kvp.Value.PositionInBytes;
                         bool playing = kvp.Value.Playing;
-                        kvp.Value.Init(base.OutputDevice);
+                        kvp.Value.Device = base.OutputDevice;
                         kvp.Value.PositionInBytes = position;
                         if (playing) {
                             kvp.Value.Play(kvp.Value.Repeat);
@@ -85,8 +85,7 @@ namespace Raven.Audio {
                 throw new ArgumentNullException("name");
             }
 
-            Core.Audio retVal = null;
-            audio.TryRemove(name, out retVal);
+            audio.TryRemove(name, out Core.Audio retVal);
             return retVal;
         }
         public override IAudio Get(string name) {
@@ -94,8 +93,7 @@ namespace Raven.Audio {
                 throw new ArgumentNullException("name");
             }
 
-            Core.Audio retVal = null;
-            audio.TryGetValue(name, out retVal);
+            audio.TryGetValue(name, out Core.Audio retVal);
             return retVal;
         }
         public override int Count {
@@ -122,7 +120,7 @@ namespace Raven.Audio {
             inStreams.Remove(stream);
         }
 
-        //private
+        // private
         protected IAudio Add(string name, Core.Audio audio) {
             IAudio retVal = this.audio.AddIfAbsent(name, audio);
             retVal.Error += OnError;

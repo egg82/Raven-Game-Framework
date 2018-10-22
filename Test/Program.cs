@@ -16,7 +16,7 @@ using Test.Graphics;
 namespace Test {
     class Program {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private static volatile bool updating = true;
+        private static int updating = 1;
 
         private static ConcurrentSet<Window> windows = new ConcurrentSet<Window>();
 
@@ -38,8 +38,8 @@ namespace Test {
 
             ThreadPool.QueueUserWorkItem(delegate(object state) {
                 //Audio();
-                //Input();
-                Graphics();
+                Input();
+                //Graphics();
 
                 ThreadUtil.PreventSystemSleep();
 
@@ -67,7 +67,7 @@ namespace Test {
 
             do {
                 Thread.Sleep(50);
-            } while (updating);
+            } while (updating != 0);
             updateLoop.Stop();
             drawLoop.Stop();
             
@@ -129,7 +129,7 @@ namespace Test {
 
         private static void OnCancel(object sender, ConsoleCancelEventArgs e) {
             e.Cancel = true;
-            updating = false;
+            Interlocked.Exchange(ref updating, 0);
         }
         private static void OnWindowClose(object sender, EventArgs e) {
             Window w = (Window) sender;

@@ -4,22 +4,23 @@ using Raven.Geom.Tree;
 using SFML.Graphics;
 using SFML.System;
 using System;
+using System.Threading;
 
 namespace Raven.Display {
     public abstract class DisplayObject : QuadNode {
-        //vars
-        private volatile bool visible = true;
+        // vars
+        private int visible = 1;
         private DisplayObjectContainer parent = null;
         
         private RenderStates renderState = RenderStates.Default;
-        private VertexArray renderArray = new VertexArray(PrimitiveType.Quads, 4);
+        private readonly VertexArray renderArray = new VertexArray(PrimitiveType.Quads, 4);
 
-        private PointD local = new PointD();
-        private PointD global = new PointD();
+        private readonly PointD local = new PointD();
+        private readonly PointD global = new PointD();
         private double rotation = 0.0d;
 
-        //constructor
-        public DisplayObject() : base() {
+        // constructor
+        protected DisplayObject() : base() {
             TextureBounds = new RectD();
             Color = new Color(255, 255, 255, 255);
             Skew = new Skew();
@@ -32,15 +33,15 @@ namespace Raven.Display {
             Graphics.Changed += OnGraphicsChanged;
         }
 
-        //public
+        // public
         public abstract void Update(double deltaTime);
 
         public bool Visible {
             get {
-                return visible;
+                return visible != 0;
             }
             set {
-                visible = value;
+               Interlocked.Exchange(ref visible, value ? 1 : 0);
             }
         }
         
@@ -115,7 +116,7 @@ namespace Raven.Display {
             }
             set {
                 renderState.BlendMode = value;
-                Graphics.BlendMode = value;
+                Graphics.SetBlendMode(value);
             }
         }
         public Shader Shader {
@@ -124,7 +125,7 @@ namespace Raven.Display {
             }
             set {
                 renderState.Shader = value;
-                Graphics.Shader = value;
+                Graphics.SetShader(value);
             }
         }
 
@@ -239,9 +240,9 @@ namespace Raven.Display {
             }
         }
 
-        //private
+        // private
         internal virtual void Draw(RenderTarget target, Transform parentTransform, Color parentColor) {
-            if (!visible) {
+            if (visible == 0) {
                 return;
             }
 

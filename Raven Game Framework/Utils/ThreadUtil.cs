@@ -3,11 +3,11 @@ using System.Runtime.InteropServices;
 
 namespace Raven.Utils {
     public class ThreadUtil {
-        //vars
+        // externs
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern ExecutionState SetThreadExecutionState(ExecutionState esFlags);
 
-        //enums
+        // enums
         [Flags]
         private enum ExecutionState : uint {
             ES_SYSTEM_REQUIRED = 0x00000001,
@@ -17,17 +17,19 @@ namespace Raven.Utils {
             ES_CONTINUOUS = 0x80000000
         }
 
-        //constructor
-        public ThreadUtil() {
+        // vars
+
+        // constructor
+        private ThreadUtil() {
 
         }
 
-        //public
+        // public
         public static void PreventSystemSleep() {
             SetThreadExecutionState(ExecutionState.ES_CONTINUOUS | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_SYSTEM_REQUIRED);
         }
 
-        //private
+        // private
 
     }
 }

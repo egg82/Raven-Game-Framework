@@ -2,7 +2,6 @@
 
 namespace Raven.Input {
     public interface IInputEngine {
-        //functions
         IKeyboard Keyboard { get; }
         IMouse Mouse { get; }
         IControllers Controllers { get; }

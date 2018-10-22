@@ -8,17 +8,17 @@ using System.Drawing.Drawing2D;
 
 namespace Raven.Display.Core {
     public class Graphics {
-        //vars
+        // events
         internal event EventHandler<EventArgs> Changed = null;
 
+        // vars
         private RenderStates renderState = RenderStates.Default;
-        private VertexArray renderArray = new VertexArray(PrimitiveType.Quads, 4);
+        private readonly VertexArray renderArray = new VertexArray(PrimitiveType.Quads, 4);
 
         private Bitmap bitmap = new Bitmap(1, 1);
         private readonly object bitmapLock = new object();
-        private volatile bool antialiasing = false;
 
-        //constructor
+        // constructor
         public Graphics() {
             using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bitmap)) {
                 g.Clear(System.Drawing.Color.Transparent);
@@ -26,15 +26,8 @@ namespace Raven.Display.Core {
             renderState.Texture = TextureUtil.FromBitmap(bitmap);
         }
 
-        //public
-        public bool Antialiasing {
-            get {
-                return antialiasing;
-            }
-            set {
-                antialiasing = value;
-            }
-        }
+        // public
+        public bool Antialiasing { get; set; }
         
         public void DrawArc(Pen pen, double x, double y, double width, double height, double startAngle, double sweepAngle) {
             if (pen == null) {
@@ -327,10 +320,6 @@ namespace Raven.Display.Core {
         }
 
         public void FillColor(System.Drawing.Color color) {
-            if (color == null) {
-                throw new ArgumentNullException("color");
-            }
-
             lock (bitmapLock) {
                 using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bitmap)) {
                     g.Clear(color);
@@ -354,16 +343,12 @@ namespace Raven.Display.Core {
             }
         }
 
-        //private
-        internal BlendMode BlendMode {
-            set {
-                renderState.BlendMode = value;
-            }
+        // private
+        internal void SetBlendMode(BlendMode blendMode) {
+            renderState.BlendMode = blendMode;
         }
-        internal Shader Shader {
-            set {
-                renderState.Shader = value;
-            }
+        internal void SetShader(Shader shader) {
+            renderState.Shader = shader;
         }
 
         internal int Width {

@@ -7,25 +7,22 @@ using Raven.Overrides;
 
 namespace Raven.Patterns {
     public class ServiceLocator {
-        //vars
+        // vars
         private static ConcurrentSet<Type> services = new ConcurrentSet<Type>();
         private static ConcurrentDictionary<Type, object> initializedServices = new ConcurrentDictionary<Type, object>();
         private static ConcurrentDictionary<Type, object> lookupCache = new ConcurrentDictionary<Type, object>();
 
-        //constructor
-        public ServiceLocator() {
+        // constructor
+        private ServiceLocator() {
 
         }
 
-        //public
+        // public
         public static T GetService<T>() {
             Type type = typeof(T);
 
-            object result = null;
-            if (!initializedServices.TryGetValue(type, out result)) {
-                if (services.Contains(type)) {
-                    result = initializedServices.AddIfAbsent(type, InitializeService(type));
-                }
+            if (!initializedServices.TryGetValue(type, out object result) && services.Contains(type)) {
+                result = initializedServices.AddIfAbsent(type, InitializeService(type));
             }
 
             if (result == null) {
@@ -98,8 +95,7 @@ namespace Raven.Patterns {
             foreach (Type t in services) {
                 if (type.Equals(t) || type.IsAssignableFrom(t)) {
                     services.Remove(t);
-                    object result = null;
-                    if (initializedServices.TryRemove(t, out result)) {
+                    if (initializedServices.TryRemove(t, out object result)) {
                         retVal.Add((T) result);
                     }
                 }
@@ -141,17 +137,9 @@ namespace Raven.Patterns {
             return result;
         }
 
-        //private
+        // private
         private static object InitializeService(Type type) {
-            object instance = null;
-
-            try {
-                instance = Activator.CreateInstance(type);
-            } catch (Exception ex) {
-                throw new Exception("Service cannot be initialized.", ex);
-            }
-
-            return instance;
+            return Activator.CreateInstance(type);
         }
     }
 }

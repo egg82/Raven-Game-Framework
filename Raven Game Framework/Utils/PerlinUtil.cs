@@ -2,7 +2,7 @@
 
 namespace Raven.Utils {
     public class PerlinUtil {
-        //vars
+        // vars
         private static readonly byte[] original = new byte[] {
             151,160,137,91,90,15,
             131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
@@ -32,12 +32,12 @@ namespace Raven.Utils {
             138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
         };
 
-        //constructor
-        public PerlinUtil() {
+        // constructor
+        private PerlinUtil() {
 
         }
 
-        //public
+        // public
         public static byte[] GetPerm(int seed = 0) {
             byte[] perm = null;
 
@@ -67,7 +67,7 @@ namespace Raven.Utils {
             return (((hash & 1) == 0) ? x : -x) + (((hash & 2) == 0) ? y : -y);
         }
 
-        //private
+        // private
 
     }
 }
